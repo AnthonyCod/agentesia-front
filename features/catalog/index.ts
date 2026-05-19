@@ -1,0 +1,7 @@
+export { catalogApi, useGetProductsQuery, useGetProductQuery, useCreateProductMutation, useUpdateProductMutation, useDeleteProductMutation } from './api/catalogApi'
+export { useCatalogStore } from './store/catalogStore'
+export { useCatalogFilters } from './hooks/useCatalogFilters'
+export { CatalogTable } from './components/CatalogTable'
+export { ProductForm } from './components/ProductForm'
+export { ProductCard } from './components/ProductCard'
+export type { Product, CreateProductDto, UpdateProductDto, CatalogFilters } from './types/catalog.types'
