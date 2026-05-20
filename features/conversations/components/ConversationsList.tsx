@@ -9,8 +9,8 @@ import { formatDate } from '@/shared/utils/formatters'
 import type { Conversation } from '../types/conversation.types'
 
 function CanalIcon({ canal }: { canal: Conversation['canal'] }) {
-  if (canal === 'instagram') return <AtSign className="h-4 w-4 text-pink-500" />
-  return <Rss className="h-4 w-4 text-blue-600" />
+  if (canal === 'instagram') return <AtSign className="h-4 w-4" style={{ color: '#E1306C' }} />
+  return <Rss className="h-4 w-4" style={{ color: '#1877F2' }} />
 }
 
 export function ConversationsList() {
@@ -28,41 +28,60 @@ export function ConversationsList() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold text-gray-900 dark:text-white">Conversaciones</h1>
-        <span className="text-sm text-gray-500 dark:text-gray-400">{filtered.length} conversaciones</span>
+        <div>
+          <h1 className="text-xl font-bold" style={{ color: 'var(--color-ink)', letterSpacing: '-0.02em' }}>
+            Conversaciones
+          </h1>
+          <p className="text-sm" style={{ color: 'var(--color-muted)' }}>
+            {filtered.length} conversación{filtered.length !== 1 ? 'es' : ''}
+          </p>
+        </div>
       </div>
 
+      {/* Search */}
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+        <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2" style={{ color: 'var(--color-muted)' }} />
         <input
           type="text"
           placeholder="Buscar por ID de usuario..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full rounded-md border border-gray-300 bg-white py-2 pl-9 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+          className="w-full rounded-lg border py-2.5 pl-10 pr-4 text-sm outline-none transition-all"
+          style={{ borderColor: 'var(--color-border)', backgroundColor: '#fff', color: 'var(--color-ink)' }}
+          onFocus={(e) => { e.currentTarget.style.borderColor = 'var(--color-primary)'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(197,48,48,0.1)' }}
+          onBlur={(e) => { e.currentTarget.style.borderColor = 'var(--color-border)'; e.currentTarget.style.boxShadow = '' }}
         />
       </div>
 
-      <div className="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700">
+      {/* List */}
+      <div className="overflow-hidden rounded-xl border bg-white" style={{ borderColor: 'var(--color-border)' }}>
         {filtered.length === 0 ? (
-          <div className="flex flex-col items-center gap-2 py-16 text-gray-400">
-            <MessageCircle className="h-8 w-8" />
+          <div className="flex flex-col items-center gap-2 py-16" style={{ color: 'var(--color-muted)' }}>
+            <MessageCircle className="h-8 w-8 opacity-40" />
             <p className="text-sm">Sin conversaciones</p>
           </div>
         ) : (
-          <div className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-900">
-            {filtered.map((conv) => (
+          <div>
+            {filtered.map((conv, i) => (
               <Link
                 key={conv.id}
                 href={`/conversations/${conv.id}`}
-                className="flex items-center gap-4 px-4 py-3 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800"
+                className="flex items-center gap-4 px-4 py-3.5 transition-colors"
+                style={{ borderBottom: i < filtered.length - 1 ? '1px solid var(--color-border)' : 'none' }}
+                onMouseEnter={(e) => ((e.currentTarget as HTMLAnchorElement).style.backgroundColor = 'var(--color-cream)')}
+                onMouseLeave={(e) => ((e.currentTarget as HTMLAnchorElement).style.backgroundColor = '')}
               >
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700">
+                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full"
+                  style={{ backgroundColor: 'var(--color-cream-dark)' }}>
                   <CanalIcon canal={conv.canal} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium text-gray-900 dark:text-white truncate">{conv.user_ig_id}</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">{formatDate(conv.updated_at)}</p>
+                  <p className="font-semibold truncate text-sm" style={{ color: 'var(--color-ink)' }}>
+                    {conv.user_ig_id}
+                  </p>
+                  <p className="text-xs" style={{ color: 'var(--color-muted)' }}>
+                    {formatDate(conv.updated_at)}
+                  </p>
                 </div>
                 <Badge variant={conv.estado === 'activa' ? 'success' : 'default'}>
                   {conv.estado === 'activa' ? 'Activa' : 'Archivada'}

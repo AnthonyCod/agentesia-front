@@ -8,10 +8,15 @@ const sizeClasses: Record<SpinnerSize, string> = {
   lg: 'h-8 w-8',
 }
 
-export function Spinner({ size = 'md', className }: { size?: SpinnerSize; className?: string }) {
+export function Spinner({ size = 'md', className, style }: {
+  size?: SpinnerSize
+  className?: string
+  style?: React.CSSProperties
+}) {
   return (
     <svg
-      className={cn('animate-spin text-current', sizeClasses[size], className)}
+      className={cn('animate-spin', sizeClasses[size], className)}
+      style={{ color: 'var(--color-primary)', ...style }}
       fill="none"
       viewBox="0 0 24 24"
     >

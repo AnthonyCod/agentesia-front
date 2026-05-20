@@ -11,9 +11,9 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
   ({ label, error, helperText, className, id, ...props }, ref) => {
     const inputId = id ?? label?.toLowerCase().replace(/\s+/g, '-')
     return (
-      <div className="flex flex-col gap-1">
+      <div className="flex flex-col gap-1.5">
         {label && (
-          <label htmlFor={inputId} className="text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label htmlFor={inputId} className="text-sm font-semibold" style={{ color: 'var(--color-ink)' }}>
             {label}
           </label>
         )}
@@ -21,14 +21,17 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           ref={ref}
           id={inputId}
           className={cn(
-            'rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100',
-            error && 'border-red-500 focus:ring-red-500',
+            'rounded-lg border px-3.5 py-2.5 text-sm transition-all duration-150 outline-none placeholder:text-[var(--color-muted)] disabled:cursor-not-allowed disabled:opacity-50',
+            error
+              ? 'border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/20'
+              : 'border-[var(--color-border)] focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/15',
             className,
           )}
+          style={{ backgroundColor: 'var(--color-surface)', color: 'var(--color-ink)' }}
           {...props}
         />
-        {error && <p className="text-xs text-red-600 dark:text-red-400">{error}</p>}
-        {helperText && !error && <p className="text-xs text-gray-500 dark:text-gray-400">{helperText}</p>}
+        {error      && <p className="text-xs font-medium" style={{ color: 'var(--color-primary)' }}>{error}</p>}
+        {helperText && !error && <p className="text-xs" style={{ color: 'var(--color-muted)' }}>{helperText}</p>}
       </div>
     )
   },

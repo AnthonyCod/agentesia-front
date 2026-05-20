@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
-const PUBLIC_PATHS = ['/login', '/register']
+const PUBLIC_PATHS = ['/', '/login', '/register']
 const ONBOARDING_PATH = '/onboarding'
 const SELECT_TENANT_PATH = '/select-tenant'
 
@@ -24,11 +24,16 @@ export function middleware(request: NextRequest) {
     } catch { /* ignore */ }
   }
 
-  // Rutas públicas
+  // Landing page: si ya está autenticado, ir al app
+  if (pathname === '/') {
+    if (isAuthenticated) return NextResponse.redirect(new URL('/catalog', request.url))
+    return NextResponse.next()
+  }
+
+  // Rutas públicas (login/register)
   if (PUBLIC_PATHS.includes(pathname)) {
     if (!isAuthenticated) return NextResponse.next()
     if (hasMultipleTenants && !hasTenant) return NextResponse.redirect(new URL(SELECT_TENANT_PATH, request.url))
-    if (!hasTenant) return NextResponse.redirect(new URL(ONBOARDING_PATH, request.url))
     return NextResponse.redirect(new URL('/catalog', request.url))
   }
 
@@ -48,5 +53,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
+  matcher: ['/((?!api|_next/static|_next/image|images|favicon.ico).*)'],
 }

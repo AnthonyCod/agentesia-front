@@ -19,7 +19,6 @@ export interface LoginCredentials {
 export interface RegisterCredentials {
   email: string
   password: string
-  nombre: string
 }
 
 export interface GoogleLoginDto {

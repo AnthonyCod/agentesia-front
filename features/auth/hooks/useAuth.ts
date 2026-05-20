@@ -11,7 +11,6 @@ import { useAuthStore } from '../store/authStore'
 import type { LoginCredentials, RegisterCredentials, AuthResult } from '../types/auth.types'
 
 function resolveRedirect(result: AuthResult): string {
-  if (result.needsOnboarding) return '/onboarding'
   if (result.needsTenantSelection) return '/select-tenant'
   return '/catalog'
 }

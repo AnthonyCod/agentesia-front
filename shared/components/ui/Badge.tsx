@@ -3,11 +3,11 @@ import { cn } from '@/shared/utils/cn'
 export type BadgeVariant = 'default' | 'success' | 'warning' | 'danger' | 'info'
 
 const variantClasses: Record<BadgeVariant, string> = {
-  default: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200',
-  success: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
-  warning: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
-  danger: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
-  info: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
+  default: 'bg-[var(--color-cream-dark)] text-[var(--color-muted)]',
+  success: 'bg-green-50 text-green-700 ring-1 ring-green-200',
+  warning: 'bg-amber-50 text-amber-700 ring-1 ring-amber-200',
+  danger:  'bg-red-50 text-[var(--color-primary)] ring-1 ring-red-200',
+  info:    'bg-blue-50 text-blue-700 ring-1 ring-blue-200',
 }
 
 interface BadgeProps {
@@ -18,7 +18,11 @@ interface BadgeProps {
 
 export function Badge({ variant = 'default', children, className }: BadgeProps) {
   return (
-    <span className={cn('inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium', variantClasses[variant], className)}>
+    <span className={cn(
+      'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold',
+      variantClasses[variant],
+      className,
+    )}>
       {children}
     </span>
   )
