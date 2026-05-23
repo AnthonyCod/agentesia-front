@@ -1,5 +1,5 @@
 export { conversationsApi, useGetConversationsQuery, useGetConversationMessagesQuery } from './api/conversationsApi'
-export { useConversationsStore } from './store/conversationsStore'
+export { conversationsSlice, setSearch } from './store/conversationsSlice'
 export { ConversationsList } from './components/ConversationsList'
 export { ConversationThread } from './components/ConversationThread'
 export type { Conversation, Message, ConversationWithMessages } from './types/conversation.types'

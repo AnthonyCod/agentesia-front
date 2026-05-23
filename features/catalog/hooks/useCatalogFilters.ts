@@ -1,11 +1,13 @@
 'use client'
 import { useMemo } from 'react'
 import { useDebounce } from '@/shared/hooks/useDebounce'
-import { useCatalogStore } from '../store/catalogStore'
+import { useAppSelector, useAppDispatch } from '@/shared/store/hooks'
+import { setFilters } from '../store/catalogSlice'
 import { useGetProductsQuery } from '../api/catalogApi'
 
 export function useCatalogFilters() {
-  const { filters, setFilters } = useCatalogStore()
+  const dispatch = useAppDispatch()
+  const filters = useAppSelector((s) => s.catalog.filters)
   const debouncedSearch = useDebounce(filters.search, 350)
   const query = useGetProductsQuery()
 
@@ -20,5 +22,10 @@ export function useCatalogFilters() {
     )
   }, [query.data, debouncedSearch])
 
-  return { filters, setFilters, ...query, data: filteredProducts }
+  return {
+    filters,
+    setFilters: (f: Parameters<typeof setFilters>[0]) => dispatch(setFilters(f)),
+    ...query,
+    data: filteredProducts,
+  }
 }

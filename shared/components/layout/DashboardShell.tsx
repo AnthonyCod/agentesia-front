@@ -7,7 +7,13 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   return (
-    <div className="flex min-h-screen" style={{ backgroundColor: 'var(--color-cream)' }}>
+    <div className="flex min-h-screen" style={{
+      background: [
+        'radial-gradient(ellipse 70% 35% at 100% 0%, rgba(197,48,48,0.05) 0%, transparent 55%)',
+        'radial-gradient(ellipse 50% 30% at 0% 100%, rgba(212,168,71,0.04) 0%, transparent 50%)',
+        'var(--color-cream)',
+      ].join(', '),
+    }}>
       {/* Mobile backdrop */}
       {sidebarOpen && (
         <div

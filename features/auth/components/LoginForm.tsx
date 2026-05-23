@@ -1,5 +1,6 @@
 'use client'
 import Link from 'next/link'
+import Script from 'next/script'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -7,6 +8,7 @@ import { Button } from '@/shared/components/ui/Button'
 import { Input } from '@/shared/components/ui/Input'
 import { useAuth } from '../hooks/useAuth'
 import { GoogleLoginButton } from './GoogleLoginButton'
+import { FacebookLoginButton } from './FacebookLoginButton'
 
 const loginSchema = z.object({
   email:    z.string().email('Email inválido'),
@@ -33,36 +35,48 @@ export function LoginForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-      <Input label="Email"      type="email"    autoComplete="email"            {...register('email')}    error={errors.email?.message} />
-      <Input label="Contraseña" type="password" autoComplete="current-password" {...register('password')} error={errors.password?.message} />
+    <>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+        <Input label="Email"      type="email"    autoComplete="email"            {...register('email')}    error={errors.email?.message} />
+        <Input label="Contraseña" type="password" autoComplete="current-password" {...register('password')} error={errors.password?.message} />
 
-      {errors.root && (
-        <p className="rounded-lg px-3.5 py-2.5 text-sm font-medium"
-          style={{ backgroundColor: 'var(--color-primary-light)', color: 'var(--color-primary)' }}>
-          {errors.root.message}
-        </p>
-      )}
+        {errors.root && (
+          <p className="rounded-lg px-3.5 py-2.5 text-sm font-medium"
+            style={{ backgroundColor: 'var(--color-primary-light)', color: 'var(--color-primary)' }}>
+            {errors.root.message}
+          </p>
+        )}
 
-      <Button type="submit" variant="primary" loading={isLoginLoading} className="w-full py-3 rounded-xl text-base">
-        Iniciar sesión
-      </Button>
+        <Button type="submit" variant="primary" loading={isLoginLoading} className="w-full py-3 rounded-xl text-base">
+          Iniciar sesión
+        </Button>
 
-      <div className="relative flex items-center gap-3 py-1">
-        <div className="flex-1 border-t" style={{ borderColor: 'var(--color-border)' }} />
-        <span className="text-xs" style={{ color: 'var(--color-muted)' }}>o continúa con</span>
-        <div className="flex-1 border-t" style={{ borderColor: 'var(--color-border)' }} />
-      </div>
+        <div className="relative flex items-center gap-3 py-1">
+          <div className="flex-1 border-t" style={{ borderColor: 'var(--color-border)' }} />
+          <span className="text-xs" style={{ color: 'var(--color-muted)' }}>o continúa con</span>
+          <div className="flex-1 border-t" style={{ borderColor: 'var(--color-border)' }} />
+        </div>
 
-      <GoogleLoginButton />
+        <GoogleLoginButton />
+        <FacebookLoginButton />
 
-      <p className="text-center text-sm" style={{ color: 'var(--color-muted)' }}>
-        ¿No tienes cuenta?{' '}
-        <Link href="/register" className="font-semibold transition-opacity hover:opacity-70"
-          style={{ color: 'var(--color-primary)' }}>
-          Regístrate gratis
-        </Link>
-      </p>
-    </form>
+        <div className="flex items-center justify-between text-sm">
+          <Link href="/forgot-password" className="transition-opacity hover:opacity-70"
+            style={{ color: 'var(--color-muted)' }}>
+            ¿Olvidaste tu contraseña?
+          </Link>
+          <Link href="/register" className="font-semibold transition-opacity hover:opacity-70"
+            style={{ color: 'var(--color-primary)' }}>
+            Crear cuenta
+          </Link>
+        </div>
+      </form>
+
+      <Script
+        src="https://accounts.google.com/gsi/client"
+        strategy="afterInteractive"
+        onLoad={() => window.dispatchEvent(new Event('gsi-loaded'))}
+      />
+    </>
   )
 }

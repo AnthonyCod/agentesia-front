@@ -1,10 +1,12 @@
 'use client'
 import { useMemo } from 'react'
-import { useOrdersStore } from '../store/ordersStore'
+import { useAppSelector, useAppDispatch } from '@/shared/store/hooks'
+import { setFilters } from '../store/ordersSlice'
 import { useGetOrdersQuery } from '../api/ordersApi'
 
 export function useOrderFilters() {
-  const { filters, setFilters } = useOrdersStore()
+  const dispatch = useAppDispatch()
+  const filters = useAppSelector((s) => s.orders.filters)
   const query = useGetOrdersQuery()
 
   const filteredOrders = useMemo(() => {
@@ -19,5 +21,10 @@ export function useOrderFilters() {
     })
   }, [query.data, filters])
 
-  return { filters, setFilters, ...query, data: filteredOrders }
+  return {
+    filters,
+    setFilters: (f: Parameters<typeof setFilters>[0]) => dispatch(setFilters(f)),
+    ...query,
+    data: filteredOrders,
+  }
 }

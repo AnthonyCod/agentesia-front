@@ -5,6 +5,7 @@ import type {
   AuthResult,
   SelectTenantDto,
   GoogleLoginDto,
+  FacebookLoginDto,
   SetupTenantDto,
 } from '../types/auth.types'
 
@@ -27,6 +28,13 @@ export const authApi = baseApi.injectEndpoints({
     googleLogin: builder.mutation<AuthResult, GoogleLoginDto>({
       query: (body) => ({
         url: '/auth/google',
+        method: 'POST',
+        body,
+      }),
+    }),
+    facebookLogin: builder.mutation<AuthResult, FacebookLoginDto>({
+      query: (body) => ({
+        url: '/auth/facebook',
         method: 'POST',
         body,
       }),
@@ -58,6 +66,7 @@ export const {
   useLoginMutation,
   useRegisterMutation,
   useGoogleLoginMutation,
+  useFacebookLoginMutation,
   useSetupTenantMutation,
   useSelectTenantMutation,
   useLogoutMutation,

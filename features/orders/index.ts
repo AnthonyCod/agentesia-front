@@ -1,5 +1,5 @@
 export { ordersApi, useGetOrdersQuery, useGetOrderQuery, useVerifyOrderMutation, useRejectOrderMutation } from './api/ordersApi'
-export { useOrdersStore } from './store/ordersStore'
+export { ordersSlice, setFilters as setOrderFilters, openVoucher, closeVoucher } from './store/ordersSlice'
 export { useOrderFilters } from './hooks/useOrderFilters'
 export { OrderStatusBadge } from './components/OrderStatusBadge'
 export { OrdersTable } from './components/OrdersTable'

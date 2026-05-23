@@ -2,13 +2,14 @@ import { cn } from '@/shared/utils/cn'
 
 interface CardProps {
   className?: string
+  style?: React.CSSProperties
   children: React.ReactNode
 }
 
-export function Card({ className, children }: CardProps) {
+export function Card({ className, style, children }: CardProps) {
   return (
     <div className={cn('rounded-xl border bg-white shadow-sm', className)}
-      style={{ borderColor: 'var(--color-border)' }}>
+      style={{ borderColor: 'var(--color-border)', ...style }}>
       {children}
     </div>
   )

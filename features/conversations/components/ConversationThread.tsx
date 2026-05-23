@@ -1,5 +1,5 @@
 'use client'
-import { ArrowLeft, Bot, User } from 'lucide-react'
+import { ArrowLeft, Bot, User, MessageCircle } from 'lucide-react'
 import Link from 'next/link'
 import { Spinner } from '@/shared/components/ui/Spinner'
 import { Badge } from '@/shared/components/ui/Badge'
@@ -51,18 +51,16 @@ export function ConversationThread({ conversationId }: { conversationId: string 
     <div className="flex h-full flex-col gap-4">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <Link href="/conversations"
-          className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg transition-colors"
+        <Link href="/conversations" aria-label="Volver a conversaciones"
+          className="icon-btn-hover flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg transition-colors"
           style={{ color: 'var(--color-muted)' }}
-          onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.backgroundColor = 'var(--color-cream-dark)'; (e.currentTarget as HTMLAnchorElement).style.color = 'var(--color-ink)' }}
-          onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.backgroundColor = ''; (e.currentTarget as HTMLAnchorElement).style.color = 'var(--color-muted)' }}
         >
           <ArrowLeft className="h-5 w-5" />
         </Link>
         <div className="flex-1 min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="text-lg font-bold truncate" style={{ color: 'var(--color-ink)' }}>
-              {conversation.user_ig_id}
+              {conversation.user_channel_id}
             </h1>
             <Badge variant={conversation.estado === 'activa' ? 'success' : 'default'}>
               {conversation.estado}
@@ -79,9 +77,10 @@ export function ConversationThread({ conversationId }: { conversationId: string 
       <div className="flex-1 overflow-y-auto rounded-xl border bg-white p-4"
         style={{ borderColor: 'var(--color-border)' }}>
         {messages.length === 0 ? (
-          <p className="py-8 text-center text-sm" style={{ color: 'var(--color-muted)' }}>
-            Sin mensajes
-          </p>
+          <div className="flex flex-col items-center gap-2 py-12">
+            <MessageCircle className="h-10 w-10 opacity-20" style={{ color: 'var(--color-ink)' }} />
+            <p className="text-sm" style={{ color: 'var(--color-muted)' }}>Sin mensajes en esta conversación</p>
+          </div>
         ) : (
           <div className="space-y-4">
             {messages.map((msg) => <MessageBubble key={msg.id} message={msg} />)}

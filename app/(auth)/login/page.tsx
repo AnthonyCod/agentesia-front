@@ -1,5 +1,4 @@
 import type { Metadata } from 'next'
-import Script from 'next/script'
 import Image from 'next/image'
 import { LoginForm } from '@/features/auth'
 
@@ -32,12 +31,6 @@ export default function LoginPage() {
           © 2026 Luania · Hecho en Lima 🇵🇪
         </p>
       </div>
-
-      <Script
-        src="https://accounts.google.com/gsi/client"
-        strategy="afterInteractive"
-        onLoad={() => window.dispatchEvent(new Event('gsi-loaded'))}
-      />
     </div>
   )
 }

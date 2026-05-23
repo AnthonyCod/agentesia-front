@@ -1,5 +1,5 @@
 export { catalogApi, useGetProductsQuery, useGetProductQuery, useCreateProductMutation, useUpdateProductMutation, useDeleteProductMutation } from './api/catalogApi'
-export { useCatalogStore } from './store/catalogStore'
+export { catalogSlice, setFilters as setCatalogFilters, openForm, closeForm } from './store/catalogSlice'
 export { useCatalogFilters } from './hooks/useCatalogFilters'
 export { CatalogTable } from './components/CatalogTable'
 export { ProductForm } from './components/ProductForm'

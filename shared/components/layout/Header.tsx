@@ -1,14 +1,14 @@
 'use client'
 import { Store, ChevronDown, Menu, Bell } from 'lucide-react'
-import { useAuthStore } from '@/features/auth'
+import { useAppSelector } from '@/shared/store/hooks'
 import { useAuth } from '@/features/auth'
 
 interface HeaderProps { onMenuClick?: () => void }
 
 export function Header({ onMenuClick }: HeaderProps) {
-  const user = useAuthStore((s) => s.user)
-  const tenant = useAuthStore((s) => s.tenant)
-  const tenants = useAuthStore((s) => s.tenants)
+  const user = useAppSelector((s) => s.auth.user)
+  const tenant = useAppSelector((s) => s.auth.tenant)
+  const tenants = useAppSelector((s) => s.auth.tenants)
   const { selectTenant, isSelectingTenant } = useAuth()
 
   return (
@@ -24,10 +24,8 @@ export function Header({ onMenuClick }: HeaderProps) {
         {/* Hamburger — mobile only */}
         <button
           onClick={onMenuClick}
-          className="flex-shrink-0 rounded-lg p-2 transition-colors lg:hidden"
+          className="icon-btn-hover flex-shrink-0 rounded-lg p-2 transition-colors lg:hidden"
           style={{ color: 'var(--color-muted)' }}
-          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--color-cream)')}
-          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
           aria-label="Abrir menú"
         >
           <Menu className="h-5 w-5" />
@@ -37,10 +35,8 @@ export function Header({ onMenuClick }: HeaderProps) {
         {tenants.length > 1 && tenant && (
           <div className="relative group">
             <button
-              className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors"
+              className="nav-item-hover flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors"
               style={{ color: 'var(--color-ink)' }}
-              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--color-cream)')}
-              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
               disabled={isSelectingTenant}
             >
               <Store className="h-4 w-4 flex-shrink-0" style={{ color: 'var(--color-primary)' }} />
@@ -51,13 +47,11 @@ export function Header({ onMenuClick }: HeaderProps) {
               style={{ borderColor: 'var(--color-border)' }}>
               {tenants.map((t) => (
                 <button key={t.id} onClick={() => selectTenant(t.id)}
-                  className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm transition-colors first:rounded-t-xl last:rounded-b-xl"
+                  className="nav-item-hover flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm transition-colors first:rounded-t-xl last:rounded-b-xl"
                   style={{
                     fontWeight: t.id === tenant.id ? 700 : 400,
                     color: t.id === tenant.id ? 'var(--color-primary)' : 'var(--color-ink)',
                   }}
-                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--color-cream)')}
-                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
                 >
                   {t.nombre}
                   {t.id === tenant.id && (
@@ -73,10 +67,8 @@ export function Header({ onMenuClick }: HeaderProps) {
       {/* Right */}
       <div className="flex flex-shrink-0 items-center gap-2">
         <button
-          className="rounded-lg p-2 transition-colors"
+          className="icon-btn-hover rounded-lg p-2 transition-colors"
           style={{ color: 'var(--color-muted)' }}
-          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--color-cream)')}
-          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
           aria-label="Notificaciones"
         >
           <Bell className="h-4 w-4" />

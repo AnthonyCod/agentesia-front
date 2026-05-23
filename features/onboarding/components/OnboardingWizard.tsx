@@ -5,33 +5,38 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import {
-  ChevronRight, ChevronLeft, Store, AtSign, Bot, CheckCircle,
-  Info, Sparkles, Plus, ArrowRight, ExternalLink,
+  ChevronRight, ChevronLeft, ChevronDown, Store, Bot, CheckCircle,
+  Info, Sparkles, Plus, ArrowRight, Radio,
 } from 'lucide-react'
 import { Button } from '@/shared/components/ui/Button'
 import { Input } from '@/shared/components/ui/Input'
 import { useSetupTenantMutation } from '@/features/auth/api/authApi'
-import { useAuthStore } from '@/features/auth/store/authStore'
+import { setAuth } from '@/features/auth/store/authSlice'
+import { useAppSelector, useAppDispatch } from '@/shared/store/hooks'
+import { FacebookConnectButton, type FacebookPage } from '@/features/auth/components/FacebookConnectButton'
+import { ChannelSelector, type ChannelId } from './ChannelSelector'
 
 const step1Schema = z.object({ nombreTienda: z.string().min(1, 'Nombre requerido') })
-const step2Schema = z.object({
-  ig_page_id:   z.string().min(1, 'Page ID requerido'),
-  access_token: z.string().min(1, 'Access Token requerido'),
-})
+
 const step3Schema = z.object({
   bot_name:      z.string().min(1, 'Nombre del agente requerido'),
   system_prompt: z.string().min(10, 'Las instrucciones deben tener al menos 10 caracteres'),
 })
 
 type Step1Data = z.infer<typeof step1Schema>
-type Step2Data = z.infer<typeof step2Schema>
 type Step3Data = z.infer<typeof step3Schema>
 
 const STEPS = [
   { label: 'Tu tienda',  icon: Store  },
-  { label: 'Meta / IG',  icon: AtSign },
+  { label: 'Canales',    icon: Radio  },
   { label: 'Tu agente',  icon: Bot    },
 ]
+
+interface ChannelConfig {
+  instagram?: { ig_page_id: string; access_token: string }
+  facebook?:  { fb_page_id: string; access_token: string }
+  whatsapp?:  { wa_phone_number_id: string; wa_business_account_id: string; wa_access_token: string }
+}
 
 function InfoBox({ children }: { children: React.ReactNode }) {
   return (
@@ -40,6 +45,43 @@ function InfoBox({ children }: { children: React.ReactNode }) {
       <Info className="h-4 w-4 flex-shrink-0 mt-0.5" style={{ color: 'var(--color-primary)' }} />
       <div>{children}</div>
     </div>
+  )
+}
+
+function HelpAccordion({ title, children }: { title: string; children: React.ReactNode }) {
+  const [open, setOpen] = useState(false)
+  return (
+    <div className="rounded-lg overflow-hidden" style={{ border: '1px solid var(--color-border)' }}>
+      <button
+        type="button"
+        onClick={() => setOpen(o => !o)}
+        className="w-full flex items-center justify-between px-3.5 py-2.5 text-left transition-colors"
+        style={{ backgroundColor: open ? 'var(--color-primary-light)' : 'var(--color-cream)', color: 'var(--color-ink)' }}
+      >
+        <span className="text-xs font-semibold flex items-center gap-2">
+          <Info className="h-3.5 w-3.5 flex-shrink-0" style={{ color: 'var(--color-primary)' }} />
+          {title}
+        </span>
+        <ChevronDown
+          className="h-4 w-4 flex-shrink-0 transition-transform duration-200"
+          style={{ color: 'var(--color-muted)', transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }}
+        />
+      </button>
+      {open && (
+        <div className="px-3.5 py-3 text-xs space-y-2" style={{ backgroundColor: 'var(--color-surface)', color: 'var(--color-muted)' }}>
+          {children}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function StepNum({ n }: { n: number }) {
+  return (
+    <span
+      className="flex-shrink-0 flex h-5 w-5 items-center justify-center rounded-full text-white text-xs font-bold"
+      style={{ backgroundColor: 'var(--color-primary)', fontSize: '10px' }}
+    >{n}</span>
   )
 }
 
@@ -62,22 +104,38 @@ Tu rol es ayudar a los clientes a conocer productos, consultar disponibilidad y 
 Sé amable, claro y usa un tono profesional pero cercano.
 Cuando un cliente quiera comprar, crea la orden y entrégale el código de pedido para que pueda coordinar el pago.`
 
-interface WizardState {
-  nombreTienda: string
-  ig_page_id: string
-  access_token: string
-}
-
 export function OnboardingWizard() {
   const router = useRouter()
-  const { setAuth, tenants } = useAuthStore()
+  const dispatch = useAppDispatch()
+  const tenants = useAppSelector((s) => s.auth.tenants)
   const [setupTenant, { isLoading }] = useSetupTenantMutation()
+
   const [step, setStep] = useState(0)
   const [formError, setFormError] = useState<string | null>(null)
-  const [saved, setSaved] = useState<WizardState>({ nombreTienda: '', ig_page_id: '', access_token: '' })
+  const [nombreTienda, setNombreTienda] = useState('')
+
+  // Step 1: channel selection
+  const [selectedChannels, setSelectedChannels] = useState<ChannelId[]>([])
+  const [channelError, setChannelError] = useState<string | null>(null)
+
+  // Step 2: channel configs (partial; validated per selected channel)
+  const [channelConfig, setChannelConfig] = useState<ChannelConfig>({})
+
+  // IG / FB manual fields
+  const [igPageId, setIgPageId]       = useState('')
+  const [igToken, setIgToken]         = useState('')
+  const [fbPageId, setFbPageId]       = useState('')
+  const [fbToken, setFbToken]         = useState('')
+  const [igError, setIgError]         = useState('')
+  const [fbError, setFbError]         = useState('')
+
+  // WA fields
+  const [waPhoneId, setWaPhoneId]     = useState('')
+  const [waAccountId, setWaAccountId] = useState('')
+  const [waToken, setWaToken]         = useState('')
+  const [waError, setWaError]         = useState('')
 
   const form1 = useForm<Step1Data>({ resolver: zodResolver(step1Schema) })
-  const form2 = useForm<Step2Data>({ resolver: zodResolver(step2Schema) })
   const form3 = useForm<Step3Data>({
     resolver: zodResolver(step3Schema),
     defaultValues: { bot_name: 'Asistente', system_prompt: '' },
@@ -85,31 +143,82 @@ export function OnboardingWizard() {
 
   function resetWizard() {
     form1.reset()
-    form2.reset()
     form3.reset({ bot_name: 'Asistente', system_prompt: '' })
-    setSaved({ nombreTienda: '', ig_page_id: '', access_token: '' })
-    setFormError(null)
+    setNombreTienda('')
+    setSelectedChannels([])
+    setChannelConfig({})
+    setIgPageId(''); setIgToken(''); setFbPageId(''); setFbToken('')
+    setWaPhoneId(''); setWaAccountId(''); setWaToken('')
+    setFormError(null); setChannelError(null)
     setStep(0)
   }
 
   function applyPromptTemplate() {
     const nombre = form3.getValues('bot_name') || 'Asistente'
-    const tienda = saved.nombreTienda || 'tu tienda'
-    form3.setValue('system_prompt', PROMPT_TEMPLATE(nombre, tienda), { shouldValidate: true })
+    form3.setValue('system_prompt', PROMPT_TEMPLATE(nombre, nombreTienda || 'tu tienda'), { shouldValidate: true })
   }
 
+  // ── Step 1 → 2: validate channel selection ────────────────────────────
+  function goToChannelConfig() {
+    if (selectedChannels.length === 0) {
+      setChannelError('Selecciona al menos un canal')
+      return
+    }
+    setChannelError(null)
+    setStep(2)
+  }
+
+  // ── Step 2 → 3: validate each selected channel has required fields ────
+  function goToAgent() {
+    let valid = true
+    setIgError(''); setFbError(''); setWaError('')
+
+    if (selectedChannels.includes('instagram')) {
+      if (!igPageId.trim() || !igToken.trim()) {
+        setIgError('El Page ID y el Access Token de Instagram son requeridos')
+        valid = false
+      }
+    }
+    if (selectedChannels.includes('facebook')) {
+      if (!fbPageId.trim() || !fbToken.trim()) {
+        setFbError('El Page ID y el Access Token de Facebook son requeridos')
+        valid = false
+      }
+    }
+    if (selectedChannels.includes('whatsapp')) {
+      if (!waPhoneId.trim() || !waAccountId.trim() || !waToken.trim()) {
+        setWaError('Todos los campos de WhatsApp son requeridos')
+        valid = false
+      }
+    }
+
+    if (!valid) return
+
+    const config: ChannelConfig = {}
+    if (selectedChannels.includes('instagram')) config.instagram = { ig_page_id: igPageId, access_token: igToken }
+    if (selectedChannels.includes('facebook'))  config.facebook  = { fb_page_id: fbPageId, access_token: fbToken }
+    if (selectedChannels.includes('whatsapp'))  config.whatsapp  = { wa_phone_number_id: waPhoneId, wa_business_account_id: waAccountId, wa_access_token: waToken }
+    setChannelConfig(config)
+    setStep(3)
+  }
+
+  // ── Step 3 submit ─────────────────────────────────────────────────────
   async function onStep3(data: Step3Data) {
     setFormError(null)
     try {
       const result = await setupTenant({
-        nombreTienda:  saved.nombreTienda,
-        ig_page_id:    saved.ig_page_id,
-        access_token:  saved.access_token,
+        nombreTienda,
         system_prompt: data.system_prompt,
-        bot_name:      data.bot_name,
+        bot_name: data.bot_name,
+        ig_page_id:  channelConfig.instagram?.ig_page_id,
+        access_token: channelConfig.instagram?.access_token ?? channelConfig.facebook?.access_token,
+        fb_page_id:  channelConfig.facebook?.fb_page_id,
+        wa_phone_number_id:    channelConfig.whatsapp?.wa_phone_number_id,
+        wa_business_account_id: channelConfig.whatsapp?.wa_business_account_id,
+        wa_access_token:       channelConfig.whatsapp?.wa_access_token,
       }).unwrap()
-      setAuth(result)
-      setStep(3)
+      dispatch(setAuth(result))
+      setStep(4)
     } catch (err: unknown) {
       const message =
         typeof err === 'object' && err !== null && 'data' in err
@@ -124,7 +233,7 @@ export function OnboardingWizard() {
   return (
     <div className="w-full max-w-lg">
       {/* Step indicator */}
-      {step < 3 && (
+      {step < 4 && (
         <div className="mb-8 flex items-center justify-center gap-2 flex-wrap">
           {STEPS.map((s, i) => {
             const Icon = s.icon
@@ -160,17 +269,16 @@ export function OnboardingWizard() {
 
         {/* ── Step 0: nombre de tienda ── */}
         {step === 0 && (
-          <form onSubmit={form1.handleSubmit((d) => { setSaved(s => ({ ...s, nombreTienda: d.nombreTienda })); setStep(1) })}
+          <form onSubmit={form1.handleSubmit((d) => { setNombreTienda(d.nombreTienda); setStep(1) })}
             className="space-y-6">
             <StepHeader
               title="¿Cómo se llama tu tienda?"
-              subtitle="Puedes tener varias tiendas en Luania. Cada una tiene su propio catálogo, agente y canal de Instagram."
+              subtitle="Puedes tener varias tiendas en Luania. Cada una tiene su propio catálogo, agente y canal(es) de comunicación."
             />
             <InfoBox>
               <p className="font-semibold mb-1" style={{ color: 'var(--color-primary)' }}>¿Qué es una tienda en Luania?</p>
               <p className="text-xs leading-relaxed" style={{ color: 'var(--color-muted)' }}>
-                Una tienda agrupa tu catálogo de productos, tu agente de IA y tu canal de Instagram. Si vendes varias marcas o
-                tienes varios canales de Instagram, puedes crear una tienda por cada uno.
+                Una tienda agrupa tu catálogo de productos, tu agente de IA y tus canales de mensajería (Instagram, Facebook y/o WhatsApp).
               </p>
             </InfoBox>
             <Input
@@ -185,86 +293,172 @@ export function OnboardingWizard() {
           </form>
         )}
 
-        {/* ── Step 1: Meta / Instagram ── */}
+        {/* ── Step 1: selección de canales ── */}
         {step === 1 && (
-          <form onSubmit={form2.handleSubmit((d) => { setSaved(s => ({ ...s, ...d })); setStep(2) })}
-            className="space-y-6">
+          <div className="space-y-6">
             <StepHeader
-              title="Conecta tu Instagram"
-              subtitle="Tu agente IA recibirá y responderá mensajes directamente desde tu cuenta de Instagram Business."
+              title="Conecta tus canales"
+              subtitle="Elige por dónde quieres recibir mensajes de tus clientes. Puedes seleccionar más de uno."
             />
-
-            <InfoBox>
-              <p className="font-semibold mb-2" style={{ color: 'var(--color-primary)' }}>¿Por qué necesito esto?</p>
-              <p className="text-xs leading-relaxed mb-3" style={{ color: 'var(--color-muted)' }}>
-                Luania usa la API oficial de Meta para leer y enviar mensajes en tu nombre. Para eso necesitas dos cosas:
-                el <strong>Page ID</strong> de tu página de Facebook y un <strong>Access Token</strong> permanente.
-              </p>
-              <p className="font-semibold mb-1 text-xs" style={{ color: 'var(--color-ink)' }}>Requisitos previos:</p>
-              <ul className="list-disc list-inside text-xs space-y-0.5" style={{ color: 'var(--color-muted)' }}>
-                <li>Cuenta de <strong>Instagram Business</strong> (no personal)</li>
-                <li>Vinculada a una <strong>Página de Facebook</strong></li>
-                <li>App creada en <strong>Meta for Developers</strong></li>
-              </ul>
-            </InfoBox>
-
-            <div className="rounded-xl p-4 space-y-2" style={{ backgroundColor: '#F8F9FA', border: '1px solid var(--color-border)' }}>
-              <p className="text-xs font-semibold" style={{ color: 'var(--color-ink)' }}>Paso a paso:</p>
-              <ol className="list-decimal list-inside text-xs space-y-1.5" style={{ color: 'var(--color-muted)' }}>
-                <li>Entra a <strong>Facebook Business Suite</strong> → Configuración de la cuenta</li>
-                <li>Ve a <strong>Páginas</strong> → copia el <strong>Page ID</strong> de tu página</li>
-                <li>En <strong>Meta for Developers</strong>, abre tu app → <strong>Graph API Explorer</strong></li>
-                <li>Genera un token con permisos <code className="bg-gray-100 px-1 rounded">instagram_basic</code>, <code className="bg-gray-100 px-1 rounded">pages_messaging</code></li>
-                <li>Conviértelo a <strong>token de larga duración</strong> (60 días) o usa un token de sistema</li>
-              </ol>
-              <a
-                href="https://developers.facebook.com/docs/messenger-platform/get-started"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-xs font-semibold mt-1"
-                style={{ color: 'var(--color-primary)' }}
-              >
-                Guía oficial de Meta <ExternalLink className="h-3 w-3" />
-              </a>
-            </div>
-
-            <Input label="Facebook Page ID" placeholder="Ej: 123456789012345"
-              {...form2.register('ig_page_id')} error={form2.formState.errors.ig_page_id?.message} />
-            <Input label="Access Token de Meta" placeholder="EAAxxxxxxxxxxxxxxx..."
-              {...form2.register('access_token')} error={form2.formState.errors.access_token?.message} />
-
+            <ChannelSelector
+              selected={selectedChannels}
+              onChange={setSelectedChannels}
+              error={channelError ?? undefined}
+            />
             <div className="flex gap-3">
               <Button type="button" variant="secondary" onClick={() => setStep(0)} className="flex-1 py-3 rounded-xl">
                 <ChevronLeft className="h-4 w-4" /> Atrás
               </Button>
-              <Button type="submit" variant="primary" className="flex-1 py-3 rounded-xl">
+              <Button type="button" variant="primary" onClick={goToChannelConfig} className="flex-1 py-3 rounded-xl">
                 Continuar <ChevronRight className="h-4 w-4" />
               </Button>
             </div>
-          </form>
+          </div>
         )}
 
-        {/* ── Step 2: Agente IA ── */}
+        {/* ── Step 2: configuración de canales ── */}
         {step === 2 && (
+          <div className="space-y-6">
+            <StepHeader
+              title="Configura tus canales"
+              subtitle="Ingresa las credenciales de cada canal seleccionado."
+            />
+
+            {/* Instagram */}
+            {selectedChannels.includes('instagram') && (
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <div className="h-5 w-5 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{ backgroundColor: '#E1306C' }}>@</div>
+                  <p className="text-sm font-semibold" style={{ color: 'var(--color-ink)' }}>Instagram</p>
+                </div>
+
+                <div className="rounded-xl p-4 space-y-3" style={{ backgroundColor: 'var(--color-cream)', border: '1px solid var(--color-border)' }}>
+                  <p className="text-xs font-semibold" style={{ color: 'var(--color-ink)' }}>
+                    Opción rápida — conecta en 1 clic
+                  </p>
+                  <FacebookConnectButton
+                    onConnect={(page: FacebookPage) => {
+                      setIgPageId(page.id)
+                      setIgToken(page.access_token)
+                    }}
+                  />
+                </div>
+
+                <div className="relative flex items-center gap-3">
+                  <div className="flex-1 border-t" style={{ borderColor: 'var(--color-border)' }} />
+                  <span className="text-xs" style={{ color: 'var(--color-muted)' }}>o ingresa manualmente</span>
+                  <div className="flex-1 border-t" style={{ borderColor: 'var(--color-border)' }} />
+                </div>
+
+                <Input
+                  label="Facebook Page ID"
+                  placeholder="Ej: 123456789012345"
+                  value={igPageId}
+                  onChange={e => setIgPageId(e.target.value)}
+                />
+                <Input
+                  label="Access Token de Meta"
+                  placeholder="EAAxxxxxxxxxxxxxxx..."
+                  value={igToken}
+                  onChange={e => setIgToken(e.target.value)}
+                />
+                {igError && <p className="text-xs font-medium" style={{ color: 'var(--color-primary)' }}>{igError}</p>}
+              </div>
+            )}
+
+            {/* Facebook */}
+            {selectedChannels.includes('facebook') && (
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <div className="h-5 w-5 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{ backgroundColor: '#1877F2' }}>f</div>
+                  <p className="text-sm font-semibold" style={{ color: 'var(--color-ink)' }}>Facebook Messenger</p>
+                </div>
+                <Input
+                  label="Facebook Page ID"
+                  placeholder="Ej: 123456789012345"
+                  value={fbPageId}
+                  onChange={e => setFbPageId(e.target.value)}
+                />
+                <Input
+                  label="Access Token de Meta"
+                  placeholder="EAAxxxxxxxxxxxxxxx..."
+                  value={fbToken}
+                  onChange={e => setFbToken(e.target.value)}
+                />
+                <HelpAccordion title="¿Cómo obtengo el Page ID y el token?">
+                  <div className="flex gap-2 items-start">
+                    <StepNum n={1} />
+                    <span>Ve a tu <strong>Página de Facebook</strong> → Acerca de → copia el <strong>ID de la página</strong></span>
+                  </div>
+                  <div className="flex gap-2 items-start">
+                    <StepNum n={2} />
+                    <span>En <a href="https://developers.facebook.com/tools/explorer" target="_blank" rel="noopener noreferrer" className="font-semibold underline" style={{ color: 'var(--color-primary)' }}>Graph API Explorer</a> genera un token con permiso <code>pages_messaging</code></span>
+                  </div>
+                </HelpAccordion>
+                {fbError && <p className="text-xs font-medium" style={{ color: 'var(--color-primary)' }}>{fbError}</p>}
+              </div>
+            )}
+
+            {/* WhatsApp */}
+            {selectedChannels.includes('whatsapp') && (
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <div className="h-5 w-5 rounded-full flex items-center justify-center text-white text-xs" style={{ backgroundColor: '#25D366' }}>💬</div>
+                  <p className="text-sm font-semibold" style={{ color: 'var(--color-ink)' }}>WhatsApp Business</p>
+                </div>
+                <div className="space-y-3">
+                  <Input
+                    label="Phone Number ID"
+                    placeholder="Ej: 123456789012345"
+                    value={waPhoneId}
+                    onChange={e => setWaPhoneId(e.target.value)}
+                  />
+                  <Input
+                    label="Business Account ID"
+                    placeholder="Ej: 987654321098765"
+                    value={waAccountId}
+                    onChange={e => setWaAccountId(e.target.value)}
+                  />
+                  <Input
+                    label="Access Token de WhatsApp"
+                    placeholder="EAAxxxxxxxxxxxxxxx..."
+                    value={waToken}
+                    onChange={e => setWaToken(e.target.value)}
+                  />
+                </div>
+                <HelpAccordion title="¿Dónde encuentro estos datos?">
+                  <p>Meta Business Suite → Tu app → WhatsApp → Configuración de la API</p>
+                  <p>El <strong>Phone Number ID</strong> y el <strong>Business Account ID</strong> están en esa sección. El token se genera desde <strong>System Users</strong> o usa el token temporal de prueba.</p>
+                </HelpAccordion>
+                {waError && <p className="text-xs font-medium" style={{ color: 'var(--color-primary)' }}>{waError}</p>}
+              </div>
+            )}
+
+            <div className="flex gap-3 pt-2">
+              <Button type="button" variant="secondary" onClick={() => setStep(1)} className="flex-1 py-3 rounded-xl">
+                <ChevronLeft className="h-4 w-4" /> Atrás
+              </Button>
+              <Button type="button" variant="primary" onClick={goToAgent} className="flex-1 py-3 rounded-xl">
+                Continuar <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* ── Step 3: Agente IA ── */}
+        {step === 3 && (
           <form onSubmit={form3.handleSubmit(onStep3)} className="space-y-6">
             <StepHeader
               title="Configura tu agente IA"
-              subtitle="El agente es quien responde a tus clientes en Instagram, 24/7, de forma automática."
+              subtitle="El agente responderá a tus clientes por los canales conectados, 24/7, de forma automática."
             />
 
             <InfoBox>
               <p className="font-semibold mb-2" style={{ color: 'var(--color-primary)' }}>¿Cómo funciona el agente?</p>
               <p className="text-xs leading-relaxed mb-2" style={{ color: 'var(--color-muted)' }}>
-                Cuando un cliente te escribe por Instagram, el agente lee el mensaje, consulta tu catálogo de productos
-                y responde automáticamente. Si el cliente quiere comprar, el agente crea la orden y le da un código de pedido.
+                Cuando un cliente te escribe, el agente lee el mensaje, consulta tu catálogo y responde automáticamente.
+                Si quiere comprar, crea la orden y da un código de pedido.
               </p>
-              <p className="text-xs font-semibold mb-1" style={{ color: 'var(--color-ink)' }}>Las instrucciones del agente definen:</p>
-              <ul className="list-disc list-inside text-xs space-y-0.5" style={{ color: 'var(--color-muted)' }}>
-                <li>Su nombre y personalidad</li>
-                <li>El tono de comunicación (formal, cercano, divertido...)</li>
-                <li>Reglas especiales para tu negocio</li>
-                <li>Qué hacer si no sabe la respuesta</li>
-              </ul>
             </InfoBox>
 
             <Input
@@ -293,8 +487,7 @@ export function OnboardingWizard() {
                 rows={6}
                 placeholder={`Eres [nombre], asistente virtual de [tienda].
 Ayudas a los clientes a encontrar productos, consultar precios y hacer pedidos.
-Sé amable y usa un tono profesional pero cercano.
-Cuando quieran comprar, crea la orden y entrega el código de pedido.`}
+Sé amable y usa un tono profesional pero cercano.`}
                 className="rounded-lg border px-3.5 py-2.5 text-sm transition-all outline-none resize-none"
                 style={{
                   borderColor: form3.formState.errors.system_prompt ? 'var(--color-primary)' : 'var(--color-border)',
@@ -302,13 +495,9 @@ Cuando quieran comprar, crea la orden y entrega el código de pedido.`}
                   color: 'var(--color-ink)',
                   fontFamily: 'var(--font-sans)',
                 }}
-                onFocus={(e) => {
-                  e.currentTarget.style.borderColor = 'var(--color-primary)'
-                  e.currentTarget.style.boxShadow = '0 0 0 3px rgba(197,48,48,0.1)'
-                }}
+                onFocus={(e) => { e.currentTarget.style.borderColor = 'var(--color-primary)'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(197,48,48,0.1)' }}
                 onBlur={(e) => {
-                  e.currentTarget.style.borderColor = form3.formState.errors.system_prompt
-                    ? 'var(--color-primary)' : 'var(--color-border)'
+                  e.currentTarget.style.borderColor = form3.formState.errors.system_prompt ? 'var(--color-primary)' : 'var(--color-border)'
                   e.currentTarget.style.boxShadow = ''
                 }}
               />
@@ -317,9 +506,6 @@ Cuando quieran comprar, crea la orden y entrega el código de pedido.`}
                   {form3.formState.errors.system_prompt.message}
                 </p>
               )}
-              <p className="text-xs" style={{ color: 'var(--color-muted)' }}>
-                Puedes cambiar estas instrucciones en cualquier momento desde la configuración de tu tienda.
-              </p>
             </div>
 
             {formError && (
@@ -330,7 +516,7 @@ Cuando quieran comprar, crea la orden y entrega el código de pedido.`}
             )}
 
             <div className="flex gap-3">
-              <Button type="button" variant="secondary" onClick={() => setStep(1)} className="flex-1 py-3 rounded-xl">
+              <Button type="button" variant="secondary" onClick={() => setStep(2)} className="flex-1 py-3 rounded-xl">
                 <ChevronLeft className="h-4 w-4" /> Atrás
               </Button>
               <Button type="submit" variant="primary" loading={isLoading} className="flex-1 py-3 rounded-xl">
@@ -340,8 +526,8 @@ Cuando quieran comprar, crea la orden y entrega el código de pedido.`}
           </form>
         )}
 
-        {/* ── Step 3: Éxito ── */}
-        {step === 3 && (
+        {/* ── Step 4: Éxito ── */}
+        {step === 4 && (
           <div className="flex flex-col items-center gap-5 py-4 text-center">
             <div className="flex h-16 w-16 items-center justify-center rounded-full"
               style={{ backgroundColor: '#DCFCE7' }}>
@@ -349,11 +535,30 @@ Cuando quieran comprar, crea la orden y entrega el código de pedido.`}
             </div>
             <div>
               <h2 className="text-xl font-bold" style={{ color: 'var(--color-ink)' }}>
-                ¡{saved.nombreTienda || 'Tu tienda'} está lista!
+                ¡{nombreTienda || 'Tu tienda'} está lista!
               </h2>
               <p className="mt-1 text-sm" style={{ color: 'var(--color-muted)' }}>
-                Tu agente ya puede recibir mensajes en Instagram y crear pedidos automáticamente.
+                Tu agente ya puede recibir mensajes por tus canales conectados y crear pedidos automáticamente.
               </p>
+            </div>
+
+            {/* Channels connected summary */}
+            <div className="w-full flex gap-2 justify-center flex-wrap">
+              {selectedChannels.includes('instagram') && (
+                <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full text-white" style={{ backgroundColor: '#E1306C' }}>
+                  @ Instagram
+                </span>
+              )}
+              {selectedChannels.includes('facebook') && (
+                <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full text-white" style={{ backgroundColor: '#1877F2' }}>
+                  f Facebook
+                </span>
+              )}
+              {selectedChannels.includes('whatsapp') && (
+                <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full text-white" style={{ backgroundColor: '#25D366' }}>
+                  💬 WhatsApp
+                </span>
+              )}
             </div>
 
             {storeCount > 0 && (
@@ -369,30 +574,17 @@ Cuando quieran comprar, crea la orden y entrega el código de pedido.`}
             )}
 
             <div className="flex flex-col gap-3 w-full">
-              <Button
-                type="button"
-                variant="primary"
-                className="w-full py-3 rounded-xl text-base"
-                onClick={() => router.push('/catalog')}
-              >
+              <Button type="button" variant="primary" className="w-full py-3 rounded-xl text-base" onClick={() => router.push('/catalog')}>
                 Ir a mi panel <ArrowRight className="h-4 w-4" />
               </Button>
-              <Button
-                type="button"
-                variant="secondary"
-                className="w-full py-3 rounded-xl text-base"
-                onClick={resetWizard}
-              >
+              <Button type="button" variant="secondary" className="w-full py-3 rounded-xl text-base" onClick={resetWizard}>
                 <Plus className="h-4 w-4" /> Agregar otra tienda
               </Button>
             </div>
-
-            <p className="text-xs" style={{ color: 'var(--color-muted)' }}>
-              También puedes agregar más tiendas desde la configuración de tu cuenta.
-            </p>
           </div>
         )}
       </div>
     </div>
   )
 }
+

@@ -1,11 +1,17 @@
 'use client'
-import { Eye, Search } from 'lucide-react'
+import { useState } from 'react'
+import { Eye, Search, ShoppingCart } from 'lucide-react'
 import { Button } from '@/shared/components/ui/Button'
-import { Spinner } from '@/shared/components/ui/Spinner'
+import { SkeletonTable } from '@/shared/components/ui/Skeleton'
+import { Pagination } from '@/shared/components/ui/Pagination'
+import { formatPrice } from '@/shared/utils/formatters'
 import { useOrderFilters } from '../hooks/useOrderFilters'
-import { useOrdersStore } from '../store/ordersStore'
+import { useAppDispatch } from '@/shared/store/hooks'
+import { openVoucher } from '../store/ordersSlice'
 import { OrderStatusBadge } from './OrderStatusBadge'
 import type { Order, OrderEstado } from '../types/order.types'
+
+const PAGE_SIZE = 15
 
 const estadoOptions: { value: OrderEstado | 'all'; label: string }[] = [
   { value: 'all',                   label: 'Todos los estados'      },
@@ -18,11 +24,19 @@ const estadoOptions: { value: OrderEstado | 'all'; label: string }[] = [
 
 export function OrdersTable() {
   const { data: orders, isLoading, filters, setFilters } = useOrderFilters()
-  const { openVoucher } = useOrdersStore()
+  const dispatch = useAppDispatch()
+  const [page, setPage] = useState(1)
 
   if (isLoading) {
-    return <div className="flex justify-center p-12"><Spinner size="lg" /></div>
+    return (
+      <div className="space-y-4">
+        <div className="h-8 w-32 skeleton-shimmer rounded-md" />
+        <SkeletonTable rows={8} cols={5} />
+      </div>
+    )
   }
+
+  const paged = orders.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
 
   return (
     <div className="space-y-4">
@@ -41,22 +55,23 @@ export function OrdersTable() {
           <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2" style={{ color: 'var(--color-muted)' }} />
           <input
             type="text"
+            aria-label="Buscar pedidos por código"
             placeholder="Buscar por código..."
             value={filters.search}
-            onChange={(e) => setFilters({ search: e.target.value })}
+            onChange={(e) => { setFilters({ search: e.target.value }); setPage(1) }}
             className="w-full rounded-lg border py-2.5 pl-10 pr-4 text-sm outline-none transition-all"
             style={{ borderColor: 'var(--color-border)', backgroundColor: '#fff', color: 'var(--color-ink)' }}
             onFocus={(e) => { e.currentTarget.style.borderColor = 'var(--color-primary)'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(197,48,48,0.1)' }}
-            onBlur={(e) => { e.currentTarget.style.borderColor = 'var(--color-border)'; e.currentTarget.style.boxShadow = '' }}
+            onBlur={(e)  => { e.currentTarget.style.borderColor = 'var(--color-border)'; e.currentTarget.style.boxShadow = '' }}
           />
         </div>
         <select
           value={filters.estado}
-          onChange={(e) => setFilters({ estado: e.target.value as OrderEstado | 'all' })}
+          onChange={(e) => { setFilters({ estado: e.target.value as OrderEstado | 'all' }); setPage(1) }}
           className="w-full rounded-lg border py-2.5 px-3.5 text-sm outline-none transition-all sm:w-auto"
           style={{ borderColor: 'var(--color-border)', backgroundColor: '#fff', color: 'var(--color-ink)' }}
           onFocus={(e) => { e.currentTarget.style.borderColor = 'var(--color-primary)' }}
-          onBlur={(e) => { e.currentTarget.style.borderColor = 'var(--color-border)' }}
+          onBlur={(e)  => { e.currentTarget.style.borderColor = 'var(--color-border)' }}
         >
           {estadoOptions.map((o) => (
             <option key={o.value} value={o.value}>{o.label}</option>
@@ -78,24 +93,31 @@ export function OrdersTable() {
             </tr>
           </thead>
           <tbody>
-            {orders.length === 0 && (
+            {paged.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-4 py-12 text-center text-sm" style={{ color: 'var(--color-muted)' }}>
-                  Sin pedidos
+                <td colSpan={5} className="px-4 py-14 text-center">
+                  <div className="flex flex-col items-center gap-3">
+                    <ShoppingCart className="h-10 w-10 opacity-20" style={{ color: 'var(--color-ink)' }} />
+                    <p className="text-sm font-medium" style={{ color: 'var(--color-muted)' }}>
+                      {filters.search || filters.estado !== 'all' ? 'Sin pedidos con ese filtro' : 'Sin pedidos aún'}
+                    </p>
+                    {!filters.search && filters.estado === 'all' && (
+                      <p className="text-xs text-center" style={{ color: 'var(--color-muted)', maxWidth: '18rem' }}>
+                        Cuando tus clientes hagan pedidos por Instagram aparecerán aquí.
+                      </p>
+                    )}
+                  </div>
                 </td>
               </tr>
             )}
-            {orders.map((order: Order) => (
-              <tr key={order.id} className="transition-colors"
-                style={{ borderBottom: '1px solid var(--color-border)' }}
-                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--color-cream)')}
-                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
-              >
+            {paged.map((order: Order) => (
+              <tr key={order.id} className="table-row-hover"
+                style={{ borderBottom: '1px solid var(--color-border)' }}>
                 <td className="px-4 py-3 font-mono font-semibold" style={{ color: 'var(--color-ink)' }}>
                   {order.codigo}
                 </td>
-                <td className="px-4 py-3 font-semibold" style={{ color: 'var(--color-ink)' }}>
-                  S/ {order.precio.toFixed(2)}
+                <td className="px-4 py-3 font-semibold tabular" style={{ color: 'var(--color-ink)' }}>
+                  {formatPrice(order.precio)}
                 </td>
                 <td className="px-4 py-3"><OrderStatusBadge estado={order.estado} /></td>
                 <td className="px-4 py-3 text-sm" style={{ color: 'var(--color-muted)' }}>
@@ -103,7 +125,8 @@ export function OrdersTable() {
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex justify-end">
-                    <Button variant="ghost" onClick={() => openVoucher(order)} className="h-8 w-8 p-0 rounded-lg" title="Ver comprobante">
+                    <Button variant="ghost" onClick={() => dispatch(openVoucher(order))} aria-label="Ver comprobante"
+                      className="h-8 w-8 p-0 rounded-lg">
                       <Eye className="h-4 w-4" />
                     </Button>
                   </div>
@@ -113,6 +136,8 @@ export function OrdersTable() {
           </tbody>
         </table>
       </div>
+
+      <Pagination page={page} pageSize={PAGE_SIZE} total={orders.length} onPage={setPage} />
     </div>
   )
 }

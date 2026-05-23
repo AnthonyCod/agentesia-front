@@ -7,13 +7,14 @@ import { Badge } from '@/shared/components/ui/Badge'
 import { Card, CardContent, CardHeader } from '@/shared/components/ui/Card'
 import { Spinner } from '@/shared/components/ui/Spinner'
 import { useGetProductQuery } from '@/features/catalog/api/catalogApi'
-import { useCatalogStore } from '@/features/catalog/store/catalogStore'
+import { useAppDispatch } from '@/shared/store/hooks'
+import { openForm } from '@/features/catalog/store/catalogSlice'
 import { ProductForm } from '@/features/catalog/components/ProductForm'
 
 export default function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
   const { data: product, isLoading } = useGetProductQuery(id)
-  const { openForm } = useCatalogStore()
+  const dispatch = useAppDispatch()
 
   if (isLoading) {
     return <div className="flex justify-center p-16"><Spinner size="lg" /></div>
@@ -37,7 +38,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
           <Link href="/catalog" className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900 dark:hover:text-white">
             <ArrowLeft className="h-4 w-4" /> Volver al catálogo
           </Link>
-          <Button variant="secondary" onClick={() => openForm(product)}>
+          <Button variant="secondary" onClick={() => dispatch(openForm(product))}>
             <Pencil className="h-4 w-4" />
             Editar
           </Button>

@@ -1,11 +1,12 @@
 'use client'
 import Link from 'next/link'
 import { PlusCircle } from 'lucide-react'
-import { useAuthStore, useAuth } from '@/features/auth'
+import { useAuth } from '@/features/auth'
+import { useAppSelector } from '@/shared/store/hooks'
 import { Button } from '@/shared/components/ui/Button'
 
 export default function SelectTenantPage() {
-  const tenants = useAuthStore((s) => s.tenants)
+  const tenants = useAppSelector((s) => s.auth.tenants)
   const { selectTenant, isSelectingTenant } = useAuth()
 
   return (

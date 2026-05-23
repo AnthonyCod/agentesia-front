@@ -1,11 +1,11 @@
-export type Canal = 'instagram' | 'facebook'
+export type Canal = 'instagram' | 'facebook' | 'whatsapp'
 export type ConversationEstado = 'activa' | 'archivada'
 export type MessageRole = 'user' | 'assistant'
 
 export interface Conversation {
   id: string
   tenant_id: string
-  user_ig_id: string
+  user_channel_id: string
   canal: Canal
   estado: ConversationEstado
   created_at: string

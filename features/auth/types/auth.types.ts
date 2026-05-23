@@ -7,8 +7,9 @@ export interface User {
 export type TenantInfo = {
   id: string
   nombre: string
-  ig_page_id: string
+  ig_page_id: string | null
   bot_name: string
+  wa_phone_number_id?: string | null
 }
 
 export interface LoginCredentials {
@@ -25,12 +26,21 @@ export interface GoogleLoginDto {
   credential: string
 }
 
+export interface FacebookLoginDto {
+  accessToken: string
+}
+
 export interface SetupTenantDto {
   nombreTienda: string
-  ig_page_id: string
-  access_token: string
   system_prompt: string
   bot_name?: string
+  ig_page_id?: string
+  access_token?: string
+  fb_page_id?: string
+  fb_access_token?: string
+  wa_phone_number_id?: string
+  wa_business_account_id?: string
+  wa_access_token?: string
 }
 
 export interface SelectTenantDto {
@@ -46,12 +56,3 @@ export interface AuthResult {
   needsTenantSelection: boolean
 }
 
-export interface AuthState {
-  user: User | null
-  token: string | null
-  tenant: TenantInfo | null
-  tenants: TenantInfo[]
-  isAuthenticated: boolean
-  setAuth: (result: AuthResult) => void
-  logout: () => void
-}
