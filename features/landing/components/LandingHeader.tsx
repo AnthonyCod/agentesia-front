@@ -34,7 +34,7 @@ export function LandingHeader() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center flex-shrink-0">
-            <Image src="/images/logo.png" alt="Luania" width={72} height={72} priority />
+            <Image src="/images/logo.png" alt="Luania" width={120} height={36} priority style={{ height: 36, width: 'auto' }} />
           </Link>
 
           {/* Desktop nav */}

@@ -141,7 +141,7 @@ function TrainPreview() {
           </div>
         ))}
       </div>
-      <button style={{ marginTop: '0.875rem', width: '100%', backgroundColor: 'var(--color-primary)', color: '#fff', border: 'none', borderRadius: 10, padding: '0.75rem', fontSize: '0.82rem', fontWeight: 700, cursor: 'pointer' }}>
+      <button style={{ marginTop: '0.875rem', width: '100%', backgroundColor: 'var(--color-ink)', color: '#fff', border: 'none', borderRadius: 10, padding: '0.75rem', fontSize: '0.82rem', fontWeight: 700, cursor: 'pointer' }}>
         Guardar configuración →
       </button>
     </div>
@@ -153,9 +153,9 @@ function SellPreview() {
     <div>
       <div style={{ display: 'flex', gap: '0.625rem', marginBottom: '0.875rem' }}>
         {[
-          { label: '24/7',  sub: 'Sin pausas',    color: 'var(--color-primary)', bg: 'var(--color-primary-light)' },
-          { label: '2.1s',  sub: 'Resp. prom.',   color: '#16A34A',              bg: '#F0FDF4'                    },
-          { label: '+89%',  sub: 'Tasa cierre',   color: '#2563EB',              bg: '#EFF6FF'                    },
+          { label: '24/7',  sub: 'Sin pausas',  color: 'var(--color-accent)', bg: 'var(--color-accent-light)' },
+          { label: '2.1s',  sub: 'Resp. prom.',  color: '#16A34A',              bg: '#F0FDF4'                    },
+          { label: '+89%',  sub: 'Tasa cierre',  color: '#2563EB',              bg: '#EFF6FF'                    },
         ].map((s) => (
           <div key={s.label} style={{ flex: 1, backgroundColor: s.bg, borderRadius: 10, padding: '0.75rem 0.5rem', textAlign: 'center' }}>
             <p style={{ fontSize: '1.15rem', fontWeight: 800, color: s.color, margin: 0, lineHeight: 1 }}>{s.label}</p>
@@ -214,7 +214,7 @@ export function HowItWorksSection() {
         <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
           <p className="section-badge" style={{
             justifyContent: 'center', fontSize: '0.7rem', fontWeight: 700,
-            letterSpacing: '0.12em', color: 'var(--color-primary)', textTransform: 'uppercase',
+            letterSpacing: '0.12em', color: 'var(--color-accent)', textTransform: 'uppercase',
             marginBottom: '1.25rem',
           }}>
             Cómo funciona
@@ -233,7 +233,7 @@ export function HowItWorksSection() {
               fontFamily: 'var(--font-display, Georgia, serif)',
               fontStyle: 'italic',
               fontWeight: 400,
-              color: 'var(--color-primary)',
+              color: 'var(--color-accent)',
             }}>
               10 minutos.
             </em>
@@ -256,13 +256,13 @@ export function HowItWorksSection() {
                     textAlign: 'left',
                     backgroundColor: '#fff',
                     border: '1.5px solid var(--color-border)',
-                    borderLeft: isActive ? '4px solid var(--color-primary)' : '1.5px solid var(--color-border)',
+                    borderLeft: isActive ? '4px solid var(--color-accent)' : '1.5px solid var(--color-border)',
                     borderRadius: 16,
                     padding: '1.25rem 1.375rem',
                     cursor: 'pointer',
                     transition: 'border-color 0.2s, box-shadow 0.2s, transform 0.2s',
                     boxShadow: isActive
-                      ? '0 4px 24px rgba(197,48,48,0.10), 0 1px 4px rgba(0,0,0,0.04)'
+                      ? '0 4px 24px rgba(194,107,74,0.12), 0 1px 4px rgba(0,0,0,0.04)'
                       : '0 1px 4px rgba(0,0,0,0.04)',
                     transform: isActive ? 'translateX(3px)' : 'translateX(0)',
                     position: 'relative',
@@ -277,7 +277,7 @@ export function HowItWorksSection() {
                         className="progress-bar-fill"
                         style={{
                           height: '100%',
-                          backgroundColor: 'var(--color-primary)',
+                          backgroundColor: 'var(--color-accent)',
                           transformOrigin: 'left',
                           animationDuration: `${STEP_DURATION}ms`,
                           animationTimingFunction: 'linear',
@@ -297,8 +297,8 @@ export function HowItWorksSection() {
                       width: 36,
                       height: 28,
                       borderRadius: 8,
-                      backgroundColor: isActive ? 'var(--color-primary)' : 'var(--color-primary-light)',
-                      color: isActive ? '#fff' : 'var(--color-primary)',
+                      backgroundColor: isActive ? 'var(--color-accent)' : 'var(--color-accent-light)',
+                      color: isActive ? '#fff' : 'var(--color-accent)',
                       fontWeight: 800,
                       fontSize: '0.75rem',
                       letterSpacing: '0.04em',

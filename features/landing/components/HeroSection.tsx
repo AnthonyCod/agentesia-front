@@ -8,40 +8,21 @@ interface Message {
   id: number
   role: MessageRole
   text: string
-  images?: string[]
-}
-interface Step {
-  chips: string[]
-  aiResponse: string
-  aiImages?: string[]
 }
 
-const DEMO_STEPS: Step[] = [
-  { chips: ['¿Tienes algo floreado talla M?', '¿Hacen delivery?', 'Ver novedades'], aiResponse: '' },
-  {
-    chips: ['Quiero el Vestido Camila', 'Quiero la Blusa Renata'],
-    aiResponse: '¡Claro! 😊 Tenemos 3 opciones floreadas talla M disponibles ahora:',
-    aiImages: ['/images/productos/vestido-camila.jpg', '/images/productos/blusa-renata.jpg', '/images/productos/falda-mia.jpg'],
-  },
-  {
-    chips: ['Pago por Yape', 'Pago por Plin'],
-    aiResponse: '¡Perfecto! 🎉 El **Vestido Camila** está en stock — S/ 79. ¿Cómo prefieres pagar?',
-  },
-  {
-    chips: ['¡Listo, pagué! ✓', 'Tengo otra pregunta'],
-    aiResponse: '✅ ¡Pago recibido por Yape! Tu pedido **LUA-4823** está confirmado.\n\n📍 Entrega hoy entre 3–5 pm a Miraflores. ¡Gracias! 🛍️',
-  },
+const CONVO: { role: MessageRole; text: string; showAt: number }[] = [
+  { role: 'user', text: 'Hola! tienen la blusa renata en talla M? 🙏', showAt: 700 },
+  { role: 'ai',   text: '¡Hola Valeria! Sí tenemos 🙌\n📦 Blusa Renata — Talla M\n💰 S/ 89\n🎨 Disponible: Blanco roto y nude\n¿Cuál color prefieres?', showAt: 2400 },
+  { role: 'user', text: 'La de blanco 🤍 ¿Aceptan Yape?', showAt: 4400 },
+  { role: 'ai',   text: '¡Perfecto! Te confirmo tu pedido:\n✅ Blusa Renata blanco | Talla M | S/ 89\n📱 Yape al 944-XXX-XXX (Sofía R.)\nManda la captura y te lo enviamos ✨', showAt: 6200 },
 ]
-const NOVEDADES_STEP: Step = {
-  chips: ['Quiero la Chompa Olivia', '¿Hacen delivery?'],
-  aiResponse: '¡Aquí las últimas llegadas esta semana! 🆕✨',
-  aiImages: ['/images/productos/chompa-olivia.jpg', '/images/productos/pantalon-sofia.jpg'],
-}
-const DELIVERY_STEP: Step = {
-  chips: ['¿Tienes algo floreado talla M?', 'Ver novedades'],
-  aiResponse: '¡Sí! 🚚 Delivery a toda Lima S/ 8, provincia S/ 15. Si compras antes de las 2pm llega hoy.',
-}
-const FIRST_AI_MESSAGE = '¡Hola! 👋 Bienvenida a Atelier Lima. ¿En qué te puedo ayudar hoy?'
+const SHOW_TYPING_1_AT  = 1600
+const SHOW_TYPING_2_AT  = 5600
+const HIDE_TYPING_1_AT  = 2300
+const HIDE_TYPING_2_AT  = 6100
+const SHOW_PEDIDO_AT    = 6900
+const SHOW_YAPE_AT      = 8400
+const LOOP_RESET_AT     = 12500
 
 const TRUST_AVATARS = [
   { src: '/images/avatars/maria.jpg',  name: 'María'  },
@@ -53,17 +34,12 @@ const TRUST_AVATARS = [
 function formatText(text: string) {
   return text.split('\n').map((line, i, arr) => (
     <span key={i}>
-      {line.split(/(\*\*.*?\*\*)/).map((part, j) =>
-        part.startsWith('**') && part.endsWith('**')
-          ? <strong key={j}>{part.slice(2, -2)}</strong>
-          : part
-      )}
+      {line}
       {i < arr.length - 1 && <br />}
     </span>
   ))
 }
 
-/* ── Floating notification cards ── */
 function CardPedido({ visible }: { visible: boolean }) {
   if (!visible) return null
   return (
@@ -88,8 +64,8 @@ function CardPedido({ visible }: { visible: boolean }) {
           <p style={{ fontSize: '0.58rem', color: '#9CA3AF', margin: 0 }}>ahora mismo</p>
         </div>
       </div>
-      <p style={{ fontSize: '0.8rem', fontWeight: 700, color: '#1A1A1A', margin: '0 0 1px' }}>Vestido Camila · S/ 79</p>
-      <p style={{ fontSize: '0.68rem', color: '#6B7280', margin: 0 }}>Rosa Cárdenas · Lima</p>
+      <p style={{ fontSize: '0.8rem', fontWeight: 700, color: '#1A1A1A', margin: '0 0 1px' }}>Blusa Renata · S/ 89</p>
+      <p style={{ fontSize: '0.68rem', color: '#6B7280', margin: 0 }}>Valeria M. · Lima</p>
     </div>
   )
 }
@@ -119,9 +95,9 @@ function CardYape({ visible }: { visible: boolean }) {
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="12" fill="#22c55e"/><path d="M7 12.5l3.5 3.5 6.5-7" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-        <p style={{ fontSize: '0.9rem', fontWeight: 800, color: '#1A1A1A', margin: 0, letterSpacing: '-0.02em' }}>+S/ 79.00</p>
+        <p style={{ fontSize: '0.9rem', fontWeight: 800, color: '#1A1A1A', margin: 0, letterSpacing: '-0.02em' }}>+S/ 89.00</p>
       </div>
-      <p style={{ fontSize: '0.62rem', color: '#9CA3AF', margin: '2px 0 0' }}>Pedido LUA-4823 pagado ✓</p>
+      <p style={{ fontSize: '0.62rem', color: '#9CA3AF', margin: '2px 0 0' }}>Pedido LUA-4851 pagado ✓</p>
     </div>
   )
 }
@@ -129,50 +105,51 @@ function CardYape({ visible }: { visible: boolean }) {
 export function HeroSection() {
   const [messages, setMessages]         = useState<Message[]>([])
   const [typing, setTyping]             = useState(false)
-  const [currentStep, setCurrentStep]   = useState<Step>(DEMO_STEPS[0])
   const [showPedidoCard, setShowPedido] = useState(false)
   const [showYapeCard, setShowYape]     = useState(false)
-  const chatRef    = useRef<HTMLDivElement>(null)
-  const idRef      = useRef(0)
-  const stepIndex  = useRef(0)
+  const chatRef  = useRef<HTMLDivElement>(null)
+  const idRef    = useRef(0)
+  const timers   = useRef<ReturnType<typeof setTimeout>[]>([])
 
   const nextId = () => { idRef.current += 1; return idRef.current }
 
+  const clearTimers = () => { timers.current.forEach(clearTimeout); timers.current = [] }
+  const addTimer = (fn: () => void, delay: number) => {
+    timers.current.push(setTimeout(fn, delay))
+  }
+
+  const startSequence = () => {
+    setMessages([])
+    setTyping(false)
+    setShowPedido(false)
+    setShowYape(false)
+    idRef.current = 0
+
+    CONVO.forEach((msg) => {
+      addTimer(() => {
+        setTyping(false)
+        setMessages((prev) => [...prev, { id: nextId(), role: msg.role, text: msg.text }])
+      }, msg.showAt)
+    })
+
+    addTimer(() => setTyping(true),  SHOW_TYPING_1_AT)
+    addTimer(() => setTyping(false), HIDE_TYPING_1_AT)
+    addTimer(() => setTyping(true),  SHOW_TYPING_2_AT)
+    addTimer(() => setTyping(false), HIDE_TYPING_2_AT)
+    addTimer(() => setShowPedido(true), SHOW_PEDIDO_AT)
+    addTimer(() => setShowYape(true),   SHOW_YAPE_AT)
+    addTimer(() => { clearTimers(); startSequence() }, LOOP_RESET_AT)
+  }
+
   useEffect(() => {
-    const t = setTimeout(() => {
-      setMessages([{ id: nextId(), role: 'ai', text: FIRST_AI_MESSAGE }])
-    }, 700)
-    return () => clearTimeout(t)
+    startSequence()
+    return clearTimers
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {
     chatRef.current?.scrollTo({ top: chatRef.current.scrollHeight, behavior: 'smooth' })
   }, [messages, typing])
-
-  const handleChip = (chip: string) => {
-    if (typing) return
-    setMessages((prev) => [...prev, { id: nextId(), role: 'user', text: chip }])
-
-    let nextStep: Step
-    if      (chip === 'Ver novedades')    nextStep = NOVEDADES_STEP
-    else if (chip === '¿Hacen delivery?') nextStep = DELIVERY_STEP
-    else {
-      stepIndex.current += 1
-      nextStep = DEMO_STEPS[Math.min(stepIndex.current, DEMO_STEPS.length - 1)]
-    }
-
-    if (!nextStep.aiResponse) return
-    setTyping(true)
-    setTimeout(() => {
-      setTyping(false)
-      setMessages((prev) => [...prev, { id: nextId(), role: 'ai', text: nextStep.aiResponse, images: nextStep.aiImages }])
-      setCurrentStep(nextStep)
-      // Show pedido card when product is selected
-      if (stepIndex.current === 2) setTimeout(() => setShowPedido(true), 500)
-      // Show yape card when payment confirmed
-      if (stepIndex.current >= 3) setTimeout(() => setShowYape(true), 600)
-    }, 900 + (nextStep.aiImages ? 400 : 0))
-  }
 
   return (
     <section id="demo" style={{ padding: '6.5rem 0 5rem', overflow: 'hidden' }}>
@@ -183,9 +160,9 @@ export function HeroSection() {
           <div>
             {/* Badge */}
             <div className="animate-fade-in-down" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.75rem' }}>
-              <span style={{ display: 'block', width: 24, height: 2, backgroundColor: 'var(--color-primary)', flexShrink: 0 }} />
-              <span style={{ display: 'block', width: 7, height: 7, borderRadius: '50%', backgroundColor: 'var(--color-primary)', flexShrink: 0 }} />
-              <span style={{ fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.13em', color: 'var(--color-primary)', textTransform: 'uppercase' }}>
+              <span style={{ display: 'block', width: 24, height: 2, backgroundColor: 'var(--color-accent)', flexShrink: 0 }} />
+              <span style={{ display: 'block', width: 7, height: 7, borderRadius: '50%', backgroundColor: 'var(--color-accent)', flexShrink: 0 }} />
+              <span style={{ fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.13em', color: 'var(--color-accent)', textTransform: 'uppercase' }}>
                 Hecho en Perú · Para PYMEs peruanas
               </span>
             </div>
@@ -200,8 +177,8 @@ export function HeroSection() {
               Tú{' '}
               <em style={{
                 fontFamily: 'var(--font-display, Georgia, serif)', fontStyle: 'italic', fontWeight: 400,
-                color: 'var(--color-primary)',
-                textDecoration: 'underline', textDecorationColor: 'rgba(212,168,71,0.55)',
+                color: 'var(--color-accent)',
+                textDecoration: 'underline', textDecorationColor: 'rgba(194,107,74,0.45)',
                 textDecorationThickness: '4px', textUnderlineOffset: '5px',
               }}>
                 descansas.
@@ -225,11 +202,11 @@ export function HeroSection() {
                 backgroundColor: 'var(--color-primary)', color: '#fff', fontWeight: 700, fontSize: '1rem',
                 padding: '0.875rem 1.875rem', borderRadius: '9999px', textDecoration: 'none',
                 display: 'inline-flex', alignItems: 'center', gap: '0.375rem',
-                boxShadow: '0 4px 20px rgba(197,48,48,0.32)',
+                boxShadow: '0 4px 20px rgba(28,25,23,0.22)',
                 transition: 'background-color 0.2s, transform 0.2s var(--ease-spring), box-shadow 0.2s',
               }}
-                onMouseEnter={(e) => { const el = e.currentTarget as HTMLAnchorElement; el.style.backgroundColor = 'var(--color-primary-hover)'; el.style.transform = 'translateY(-2px) scale(1.02)'; el.style.boxShadow = '0 8px 28px rgba(197,48,48,0.4)' }}
-                onMouseLeave={(e) => { const el = e.currentTarget as HTMLAnchorElement; el.style.backgroundColor = 'var(--color-primary)'; el.style.transform = ''; el.style.boxShadow = '0 4px 20px rgba(197,48,48,0.32)' }}
+                onMouseEnter={(e) => { const el = e.currentTarget as HTMLAnchorElement; el.style.backgroundColor = 'var(--color-primary-hover)'; el.style.transform = 'translateY(-2px) scale(1.02)'; el.style.boxShadow = '0 8px 28px rgba(28,25,23,0.32)' }}
+                onMouseLeave={(e) => { const el = e.currentTarget as HTMLAnchorElement; el.style.backgroundColor = 'var(--color-primary)'; el.style.transform = ''; el.style.boxShadow = '0 4px 20px rgba(28,25,23,0.22)' }}
               >
                 Crear mi cuenta gratis →
               </Link>
@@ -288,7 +265,7 @@ export function HeroSection() {
               pointerEvents: 'none', zIndex: 0,
             }} />
 
-            {/* Floating cards (relative to this wrapper) */}
+            {/* Floating cards */}
             <CardPedido visible={showPedidoCard} />
             <CardYape visible={showYapeCard} />
 
@@ -327,7 +304,7 @@ export function HeroSection() {
                       <p style={{ fontWeight: 700, fontSize: '0.78rem', color: '#1A1A1A', margin: 0 }}>atelier.lima</p>
                       <svg width="11" height="11" viewBox="0 0 24 24" fill="#3B82F6"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                     </div>
-                    <p style={{ fontSize: '0.58rem', color: '#9CA3AF', margin: 0 }}>IA activa · responde al instante</p>
+                    <p style={{ fontSize: '0.58rem', color: '#9CA3AF', margin: 0 }}>Luania IA · responde al instante</p>
                   </div>
                   <div style={{ display: 'flex', gap: 11, flexShrink: 0 }}>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#374151" strokeWidth="2.2" strokeLinecap="round"><path d="M22 16.92V21a1 1 0 01-1.09 1A19.91 19.91 0 013 5.09 1 1 0 014 4h4.09a1 1 0 011 .75l1.17 4.43a1 1 0 01-.27 1l-2.2 2.2a16 16 0 006.84 6.84l2.2-2.2a1 1 0 011-.27l4.43 1.17a1 1 0 01.74.99z"/></svg>
@@ -337,7 +314,6 @@ export function HeroSection() {
 
                 {/* Profile card */}
                 <div style={{ backgroundColor: '#fff', padding: '1rem 1rem 0.875rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.3rem', borderBottom: '1px solid #F3F3F3' }}>
-                  {/* Story ring */}
                   <div style={{ padding: 3, borderRadius: '50%', background: 'linear-gradient(135deg, #F58529 0%, #DD2A7B 50%, #515BD4 100%)', flexShrink: 0 }}>
                     <div style={{ width: 58, height: 58, borderRadius: '50%', overflow: 'hidden', border: '2.5px solid #fff', position: 'relative' }}>
                       <Image src="/images/avatars/atelier-lima.jpg" alt="atelier.lima" fill style={{ objectFit: 'cover' }} sizes="58px" />
@@ -357,32 +333,30 @@ export function HeroSection() {
                 {/* Messages */}
                 <div ref={chatRef} style={{ flex: 1, overflowY: 'auto', padding: '10px 10px', display: 'flex', flexDirection: 'column', gap: 7, scrollbarWidth: 'none' }}>
                   {messages.map((msg) => (
-                    <div key={msg.id} className="animate-fade-in-up" style={{ display: 'flex', flexDirection: 'column', alignItems: msg.role === 'user' ? 'flex-end' : 'flex-start', gap: 3 }}>
-                      {msg.text && (
-                        <div style={{
-                          maxWidth: '80%', padding: '7px 11px',
-                          borderRadius: msg.role === 'ai' ? '4px 16px 16px 16px' : '16px 4px 16px 16px',
-                          backgroundColor: msg.role === 'ai' ? '#fff' : 'var(--color-primary)',
-                          color: msg.role === 'ai' ? '#1A1A1A' : '#fff',
-                          fontSize: '0.73rem', lineHeight: 1.55,
-                          boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
-                        }}>
-                          {formatText(msg.text)}
-                        </div>
+                    <div key={msg.id} className="animate-fade-in-up" style={{ display: 'flex', flexDirection: 'column', alignItems: msg.role === 'user' ? 'flex-end' : 'flex-start', gap: 2 }}>
+                      {msg.role === 'ai' && (
+                        <span style={{ fontSize: '0.52rem', color: '#9CA3AF', fontWeight: 600, letterSpacing: '0.04em', paddingLeft: 2 }}>
+                          Luania IA
+                        </span>
                       )}
-                      {msg.images && msg.images.length > 0 && (
-                        <div style={{ display: 'flex', gap: 4, maxWidth: '88%' }}>
-                          {msg.images.map((src) => (
-                            <div key={src} style={{ flex: 1, borderRadius: 10, overflow: 'hidden', aspectRatio: '1', position: 'relative', minWidth: 0, boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}>
-                              <Image src={src} alt="producto" fill style={{ objectFit: 'cover' }} sizes="80px" />
-                            </div>
-                          ))}
-                        </div>
+                      <div style={{
+                        maxWidth: '82%', padding: '7px 11px',
+                        borderRadius: msg.role === 'ai' ? '4px 16px 16px 16px' : '16px 4px 16px 16px',
+                        backgroundColor: msg.role === 'ai' ? '#fff' : '#1C1917',
+                        color: msg.role === 'ai' ? '#1A1A1A' : '#fff',
+                        fontSize: '0.73rem', lineHeight: 1.55,
+                        boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
+                      }}>
+                        {formatText(msg.text)}
+                      </div>
+                      {msg.role === 'user' && (
+                        <span style={{ fontSize: '0.52rem', color: '#9CA3AF', paddingRight: 2 }}>Visto ✓</span>
                       )}
                     </div>
                   ))}
                   {typing && (
                     <div className="animate-fade-in">
+                      <span style={{ fontSize: '0.52rem', color: '#9CA3AF', fontWeight: 600, letterSpacing: '0.04em', display: 'block', marginBottom: 2, paddingLeft: 2 }}>Luania IA</span>
                       <div style={{ backgroundColor: '#fff', borderRadius: '4px 16px 16px 16px', padding: '9px 13px', display: 'inline-flex', gap: 4, alignItems: 'center', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
                         <span className="typing-dot" /><span className="typing-dot" /><span className="typing-dot" />
                       </div>
@@ -390,23 +364,14 @@ export function HeroSection() {
                   )}
                 </div>
 
-                {/* Chips */}
-                <div style={{ backgroundColor: '#fff', borderTop: '1px solid #F3F3F3', padding: '7px 10px 9px' }}>
-                  <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
-                    {currentStep.chips.map((chip) => (
-                      <button key={chip} onClick={() => handleChip(chip)} disabled={typing} style={{
-                        backgroundColor: 'transparent', border: '1.5px solid #D1D5DB', color: '#374151',
-                        borderRadius: 999, padding: '4px 10px', fontSize: '0.65rem', fontWeight: 600,
-                        cursor: typing ? 'not-allowed' : 'pointer', opacity: typing ? 0.5 : 1,
-                        transition: 'background 0.15s, border-color 0.15s', whiteSpace: 'nowrap',
-                      }}
-                        onMouseEnter={(e) => { if (!typing) { const el = e.currentTarget as HTMLButtonElement; el.style.backgroundColor = '#F5F5F5'; el.style.borderColor = '#9CA3AF' } }}
-                        onMouseLeave={(e) => { const el = e.currentTarget as HTMLButtonElement; el.style.backgroundColor = 'transparent'; el.style.borderColor = '#D1D5DB' }}
-                      >
-                        {chip}
-                      </button>
-                    ))}
+                {/* Instagram-style DM input bar */}
+                <div style={{ backgroundColor: '#fff', borderTop: '1px solid #F3F3F3', padding: '8px 10px 10px', display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="1.8" strokeLinecap="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                  <div style={{ flex: 1, backgroundColor: '#F5F5F5', borderRadius: 20, padding: '5px 12px', fontSize: '0.7rem', color: '#9CA3AF' }}>
+                    Responde a atelier.lima...
                   </div>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="1.8" strokeLinecap="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="1.8" strokeLinecap="round"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2M12 19v4M8 23h8"/></svg>
                 </div>
 
               </div>

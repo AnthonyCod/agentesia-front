@@ -3,9 +3,12 @@
 @theme {
   --color-cream: #F5F0E8;
   --color-cream-dark: #EDE8DF;
-  --color-primary: #C53030;
-  --color-primary-hover: #A82828;
-  --color-primary-light: #FEF2F2;
+  --color-primary: #1C1917;
+  --color-primary-hover: #3D3530;
+  --color-primary-light: #EEEBE4;
+  --color-accent: #C26B4A;
+  --color-accent-hover: #A85A3C;
+  --color-accent-light: #FBF0EB;
   --color-ink: #1A1A1A;
   --color-muted: #737373;
   --color-border: #E2DDD4;
@@ -95,7 +98,7 @@
 
   /* Visible focus rings — accessibility CRITICAL */
   :focus-visible {
-    outline: 2px solid var(--color-primary);
+    outline: 2px solid var(--color-accent);
     outline-offset: 2px;
     border-radius: 4px;
   }
@@ -305,6 +308,6 @@
   display: inline-block;
   width: 24px;
   height: 2px;
-  background-color: var(--color-primary);
+  background-color: var(--color-accent);
   flex-shrink: 0;
 }

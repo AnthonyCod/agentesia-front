@@ -58,7 +58,7 @@ export function UseCasesSection() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section badge */}
         <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
-          <p className="section-badge" style={{ justifyContent: 'center', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.12em', color: 'var(--color-primary)', textTransform: 'uppercase' }}>
+          <p className="section-badge" style={{ justifyContent: 'center', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.12em', color: 'var(--color-accent)', textTransform: 'uppercase' }}>
             Para tu negocio
           </p>
           <h2 style={{ fontSize: 'clamp(1.75rem, 3.5vw, 2.75rem)', fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1.1, margin: 0 }}>
@@ -164,7 +164,7 @@ export function UseCasesSection() {
 
             {/* Stat */}
             <div style={{ marginBottom: '1.5rem' }}>
-              <p style={{ fontSize: 'clamp(2.5rem, 5vw, 3.25rem)', fontWeight: 900, color: 'var(--color-primary)', margin: 0, lineHeight: 1 }}>{tab.stat}</p>
+              <p style={{ fontSize: 'clamp(2.5rem, 5vw, 3.25rem)', fontWeight: 900, color: 'var(--color-accent)', margin: 0, lineHeight: 1 }}>{tab.stat}</p>
               <p style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--color-ink)', margin: '0.25rem 0 0.375rem' }}>{tab.statLabel}</p>
               <p style={{ fontSize: '0.78rem', color: 'var(--color-muted)', margin: 0, lineHeight: 1.55 }}>{tab.statNote}</p>
             </div>
@@ -173,8 +173,8 @@ export function UseCasesSection() {
             <blockquote style={{
               margin: 0,
               padding: '1rem 1.125rem',
-              borderLeft: '3px solid var(--color-primary)',
-              backgroundColor: 'var(--color-primary-light)',
+              borderLeft: '3px solid var(--color-accent)',
+              backgroundColor: 'var(--color-accent-light)',
               borderRadius: '0 10px 10px 0',
             }}>
               <p style={{ fontSize: '0.875rem', color: 'var(--color-ink)', margin: 0, lineHeight: 1.65, fontStyle: 'italic' }}>

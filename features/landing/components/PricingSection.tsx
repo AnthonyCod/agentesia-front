@@ -5,11 +5,12 @@ const PLANS = [
     name: 'Básico',
     desc: 'Para tiendas que recién empiezan a vender por redes.',
     price: 29,
-    commission: '+ 5%',
-    commissionLabel: 'por venta cerrada',
+    commission: '5%',
+    commissionLabel: 'de comisión — solo pagas si vendes',
+    commissionSub: 'S/ 0 extra si no cierras ninguna venta',
     commissionBg: 'var(--color-primary-light)',
-    commissionColor: 'var(--color-primary)',
-    cta: 'Empezar con Básico',
+    commissionColor: 'var(--color-ink)',
+    cta: 'Empezar gratis 30 días',
     ctaStyle: 'outline',
     featured: false,
     features: [
@@ -26,10 +27,11 @@ const PLANS = [
     desc: 'El plan que eligen 8 de cada 10 tiendas.',
     price: 79,
     commission: '0%',
-    commissionLabel: 'sin comisión por venta',
+    commissionLabel: 'sin comisión — 100% de tus ventas son tuyas',
+    commissionSub: null,
     commissionBg: 'rgba(255,255,255,0.08)',
     commissionColor: '#D4A847',
-    cta: 'Activar Pro',
+    cta: 'Empezar gratis 30 días',
     ctaStyle: 'primary',
     featured: true,
     features: [
@@ -46,7 +48,8 @@ const PLANS = [
     desc: 'Para operaciones de alto volumen y equipos.',
     price: 249,
     commission: '0%',
-    commissionLabel: 'sin comisión por venta',
+    commissionLabel: 'sin comisión — 100% de tus ventas son tuyas',
+    commissionSub: null,
     commissionBg: '#F5F5F5',
     commissionColor: 'var(--color-muted)',
     cta: 'Hablar con ventas',
@@ -69,14 +72,14 @@ export function PricingSection() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
-          <p className="section-badge" style={{ justifyContent: 'center', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.12em', color: 'var(--color-primary)', textTransform: 'uppercase' }}>
+          <p className="section-badge" style={{ justifyContent: 'center', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.12em', color: 'var(--color-accent)', textTransform: 'uppercase' }}>
             Planes y precios
           </p>
           <h2 style={{ fontSize: 'clamp(2rem, 4vw, 3rem)', fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1.1, margin: '0 0 1.25rem' }}>
-            Pruébalo gratis un mes.<br />Luego elige el plan que te acomode.
+            30 días gratis en todos los planes.<br />Luego elige el que te acomode.
           </h2>
           <p style={{ fontSize: '1rem', color: 'var(--color-muted)', maxWidth: '40rem', margin: '0 auto', lineHeight: 1.7 }}>
-            Empieza sin tarjeta, con acceso completo. Después de los 30 días eliges el plan que mejor calce con el tamaño de tu tienda — siempre puedes cambiar de plan o cancelar.
+            Acceso completo sin tarjeta de crédito. Después eliges el plan que mejor calce — siempre puedes cambiar o cancelar.
           </p>
         </div>
 
@@ -106,7 +109,7 @@ export function PricingSection() {
                   top: -13,
                   left: '50%',
                   transform: 'translateX(-50%)',
-                  backgroundColor: 'var(--color-primary)',
+                  backgroundColor: 'var(--color-accent)',
                   color: '#fff',
                   fontSize: '0.65rem',
                   fontWeight: 800,
@@ -114,10 +117,23 @@ export function PricingSection() {
                   textTransform: 'uppercase',
                   padding: '0.375rem 1rem',
                   borderRadius: 999,
+                  whiteSpace: 'nowrap',
                 }}>
                   Más elegido
                 </div>
               )}
+
+              {/* Free trial badge on each card */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
+                <span style={{
+                  fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase',
+                  color: plan.featured ? '#D4A847' : 'var(--color-accent)',
+                  backgroundColor: plan.featured ? 'rgba(212,168,71,0.12)' : 'var(--color-accent-light)',
+                  borderRadius: 6, padding: '3px 8px',
+                }}>
+                  30 días gratis
+                </span>
+              </div>
 
               {/* Plan header */}
               <p style={{ fontWeight: 800, fontSize: '1.375rem', margin: '0 0 0.375rem', letterSpacing: '-0.02em' }}>{plan.name}</p>
@@ -134,12 +150,14 @@ export function PricingSection() {
                   backgroundColor: plan.commissionBg,
                   borderRadius: 10,
                   padding: '0.625rem 0.875rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.625rem',
                 }}>
-                  <span style={{ fontWeight: 800, fontSize: '1.1rem', color: plan.commissionColor }}>{plan.commission}</span>
-                  <span style={{ fontSize: '0.78rem', color: plan.featured ? 'rgba(255,255,255,0.6)' : 'var(--color-muted)' }}>{plan.commissionLabel}</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <span style={{ fontWeight: 800, fontSize: '1.1rem', color: plan.commissionColor }}>{plan.commission}</span>
+                    <span style={{ fontSize: '0.75rem', color: plan.featured ? 'rgba(255,255,255,0.7)' : 'var(--color-muted)', lineHeight: 1.4 }}>{plan.commissionLabel}</span>
+                  </div>
+                  {plan.commissionSub && (
+                    <p style={{ fontSize: '0.68rem', color: 'var(--color-muted)', margin: '0.3rem 0 0' }}>{plan.commissionSub}</p>
+                  )}
                 </div>
               </div>
 
@@ -156,7 +174,7 @@ export function PricingSection() {
                   textDecoration: 'none',
                   marginBottom: '1.5rem',
                   border: plan.ctaStyle === 'primary' ? 'none' : `1.5px solid ${plan.featured ? 'rgba(255,255,255,0.3)' : 'var(--color-border)'}`,
-                  backgroundColor: plan.ctaStyle === 'primary' ? 'var(--color-primary)' : 'transparent',
+                  backgroundColor: plan.ctaStyle === 'primary' ? 'var(--color-accent)' : 'transparent',
                   color: plan.ctaStyle === 'primary' ? '#fff' : (plan.featured ? '#fff' : 'var(--color-ink)'),
                   transition: 'opacity 0.2s',
                 }}
@@ -169,7 +187,7 @@ export function PricingSection() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
                   {plan.features.map((f) => (
                     <div key={f} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.625rem' }}>
-                      <span style={{ color: plan.featured ? 'var(--color-gold)' : 'var(--color-primary)', fontSize: '0.85rem', lineHeight: 1.5, flexShrink: 0 }}>✓</span>
+                      <span style={{ color: plan.featured ? 'var(--color-gold)' : 'var(--color-accent)', fontSize: '0.85rem', lineHeight: 1.5, flexShrink: 0 }}>✓</span>
                       <span style={{ fontSize: '0.825rem', color: plan.featured ? 'rgba(255,255,255,0.85)' : 'var(--color-muted)', lineHeight: 1.5 }}>{f}</span>
                     </div>
                   ))}
@@ -177,47 +195,6 @@ export function PricingSection() {
               </div>
             </div>
           ))}
-        </div>
-
-        {/* Bottom banner */}
-        <div style={{
-          backgroundColor: '#FDF8EC',
-          border: '1px solid #E8D9A0',
-          borderRadius: 16,
-          padding: '1.25rem 2rem',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          flexWrap: 'wrap',
-          gap: '1rem',
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <div style={{ backgroundColor: 'var(--color-dark)', color: '#D4A847', borderRadius: 8, padding: '0.375rem 0.75rem', fontSize: '0.65rem', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
-              🌙 30 días gratis
-            </div>
-            <div>
-              <p style={{ fontWeight: 700, fontSize: '0.9rem', margin: 0 }}>Empieza sin pagar nada.</p>
-              <p style={{ fontSize: '0.8rem', color: 'var(--color-muted)', margin: 0 }}>Acceso completo al plan que elijas durante el primer mes. Sin tarjeta de crédito.</p>
-            </div>
-          </div>
-          <Link
-            href="/register"
-            style={{
-              backgroundColor: 'var(--color-primary)',
-              color: '#fff',
-              fontWeight: 700,
-              fontSize: '0.875rem',
-              padding: '0.75rem 1.5rem',
-              borderRadius: 10,
-              textDecoration: 'none',
-              whiteSpace: 'nowrap',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.375rem',
-            }}
-          >
-            Empezar gratis <span>→</span>
-          </Link>
         </div>
 
         <p style={{ textAlign: 'center', fontSize: '0.75rem', color: 'var(--color-muted)', marginTop: '1.25rem' }}>
