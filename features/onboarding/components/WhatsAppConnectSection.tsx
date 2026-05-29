@@ -10,8 +10,8 @@ export interface WhatsAppFormFields {
 }
 
 interface WhatsAppConnectSectionProps {
-  register: UseFormRegister<any>
-  errors: FieldErrors<any>
+  register: UseFormRegister<WhatsAppFormFields>
+  errors: FieldErrors<WhatsAppFormFields>
 }
 
 function HelpRow({ label, children }: { label: string; children: React.ReactNode }) {

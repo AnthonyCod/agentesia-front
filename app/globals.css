@@ -1,3 +1,21 @@
+/* Landing background with terracotta glow effect */
+.landing-bg {
+  background-color: #f3ede0;
+  background-image:
+    radial-gradient(circle at 75% 45%, rgba(192, 130, 97, 0.45) 0%, rgba(192, 130, 97, 0.15) 40%, transparent 70%),
+    radial-gradient(circle at 20% 90%, rgba(192, 130, 97, 0.25) 0%, transparent 50%);
+  background-attachment: fixed;
+  background-size: cover;
+}
+
+html, body {
+  background-color: #f3ede0;
+  background-image:
+    radial-gradient(circle at 75% 45%, rgba(192, 130, 97, 0.25) 0%, rgba(192, 130, 97, 0.05) 40%, transparent 70%),
+    radial-gradient(circle at 20% 90%, rgba(192, 130, 97, 0.1) 0%, transparent 50%);
+  background-attachment: fixed;
+}
+
 @import "tailwindcss";
 
 @theme {
@@ -41,10 +59,15 @@
   html {
     scroll-behavior: smooth;
     -webkit-text-size-adjust: 100%;
+    background-color: #f3ede0;
+    background-image:
+      radial-gradient(circle at 75% 45%, rgba(192, 130, 97, 0.25) 0%, rgba(192, 130, 97, 0.05) 40%, transparent 70%),
+      radial-gradient(circle at 20% 90%, rgba(192, 130, 97, 0.1) 0%, transparent 50%);
+    background-attachment: fixed;
   }
 
   body {
-    background-color: var(--color-cream);
+    background-color: transparent;
     color: var(--color-ink);
     font-family: var(--font-sans);
     font-size: 16px;
@@ -52,6 +75,7 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
+    min-height: 100vh;
   }
 
   h1, h2, h3, h4, h5, h6 {
